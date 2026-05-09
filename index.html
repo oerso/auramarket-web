@@ -13,11 +13,23 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a0b2e 100%);
+            background: linear-gradient(145deg, #0a0a0f 0%, #120a1f 50%, #1a0b2e 100%);
             font-family: 'Segoe UI', 'Montserrat', system-ui, -apple-system, sans-serif;
             color: #fff;
-            padding-bottom: 80px;
             min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Анимации */
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(179, 0, 255, 0.3); }
+            100% { box-shadow: 0 0 20px rgba(179, 0, 255, 0.7); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0px); }
         }
 
         /* Кастомный скролл */
@@ -25,231 +37,195 @@
         ::-webkit-scrollbar-track { background: #1a1a2e; }
         ::-webkit-scrollbar-thumb { background: #b300ff; border-radius: 4px; }
 
-        /* Шапка */
+        /* Шапка с логотипом */
         .header {
-            background: rgba(10, 10, 20, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(179, 0, 255, 0.3);
+            background: rgba(10, 10, 20, 0.7);
+            backdrop-filter: blur(15px);
+            padding: 18px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(179, 0, 255, 0.2);
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #b300ff, #6a00ff);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 20px;
-            box-shadow: 0 0 15px rgba(179, 0, 255, 0.5);
-        }
-
-        .logo-text {
-            font-size: 20px;
-            font-weight: bold;
-            background: linear-gradient(90deg, #fff, #b300ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .balance-card {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 20px;
-            padding: 8px 18px;
-            border: 1px solid rgba(179, 0, 255, 0.3);
-            text-align: center;
-        }
-
-        .balance-label {
-            font-size: 11px;
-            color: #aaa;
-        }
-
-        .balance-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #b300ff;
-        }
-
-        /* Категории */
-        .categories {
-            display: flex;
-            gap: 10px;
-            padding: 15px 20px;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-
-        .category {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 30px;
-            padding: 8px 20px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(179, 0, 255, 0.2);
-        }
-
-        .category.active {
-            background: linear-gradient(90deg, #b300ff, #6a00ff);
-            border-color: transparent;
-            box-shadow: 0 0 10px rgba(179, 0, 255, 0.5);
-        }
-
-        /* Сетка товаров */
-        .products {
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-
-        .product-card {
-            background: rgba(20, 20, 40, 0.6);
-            backdrop-filter: blur(5px);
-            border-radius: 20px;
-            padding: 16px;
-            border: 1px solid rgba(179, 0, 255, 0.2);
-            transition: all 0.2s ease;
-        }
-
-        .product-card:hover {
-            transform: translateY(-4px);
-            border-color: #b300ff;
-            box-shadow: 0 0 20px rgba(179, 0, 255, 0.3);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 140px;
-            background: linear-gradient(135deg, #2a1a3a, #1a0b2e);
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #1a0b2e, #0a0a0f);
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
-        }
-
-        .product-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 12px 0 8px;
-        }
-
-        .product-price {
-            font-size: 20px;
             font-weight: bold;
-            color: #b300ff;
+            font-size: 28px;
+            position: relative;
+            animation: glow 2s infinite alternate;
+            border: 1px solid rgba(179, 0, 255, 0.4);
         }
 
-        .buy-btn {
+        .logo-icon .letter-a {
+            position: absolute;
+            left: 12px;
+            top: 8px;
+            color: #fff;
+            text-shadow: 0 0 8px #b300ff;
+        }
+
+        .logo-icon .letter-m {
+            position: absolute;
+            right: 12px;
+            bottom: 8px;
+            color: #fff;
+            text-shadow: 0 0 8px #6a00ff;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ffffff, #b300ff, #6a00ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shine 3s infinite linear;
+        }
+
+        @keyframes shine {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        /* Основной контент */
+        .content {
+            padding: 20px;
+        }
+
+        /* Карточки */
+        .card {
+            background: rgba(20, 20, 40, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 24px;
+            border: 1px solid rgba(179, 0, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(179, 0, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* Кнопки */
+        .btn-primary {
             background: linear-gradient(90deg, #b300ff, #6a00ff);
             border: none;
-            border-radius: 12px;
-            padding: 10px;
+            border-radius: 36px;
+            padding: 12px 24px;
             color: white;
             font-weight: bold;
-            margin-top: 12px;
+            font-size: 16px;
             cursor: pointer;
             transition: all 0.2s ease;
             width: 100%;
+            margin-top: 12px;
         }
 
-        .buy-btn:active {
+        .btn-primary:active {
             transform: scale(0.97);
         }
 
-        /* Корзина */
-        .cart-panel {
+        .btn-secondary {
+            background: rgba(179, 0, 255, 0.15);
+            border: 1px solid rgba(179, 0, 255, 0.4);
+            border-radius: 36px;
+            padding: 12px 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* Нижняя навигация */
+        .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 20, 0.95);
-            backdrop-filter: blur(15px);
-            border-top: 1px solid #b300ff;
-            padding: 12px 20px;
+            background: rgba(8, 8, 16, 0.95);
+            backdrop-filter: blur(20px);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: space-around;
+            padding: 8px 16px 20px;
+            border-top: 1px solid rgba(179, 0, 255, 0.3);
             z-index: 200;
         }
 
-        .cart-total {
-            font-size: 18px;
-            font-weight: bold;
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: transparent;
+            border: none;
+            color: #aaa;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 6px 12px;
+            border-radius: 30px;
         }
 
-        .cart-total span {
+        .nav-item.active {
+            color: #b300ff;
+            text-shadow: 0 0 6px rgba(179, 0, 255, 0.5);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        /* Статистика */
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(179, 0, 255, 0.1);
+        }
+
+        .stats-label {
+            color: #aaa;
+        }
+
+        .stats-value {
+            font-weight: bold;
             color: #b300ff;
         }
 
-        .checkout-btn {
-            background: linear-gradient(90deg, #b300ff, #6a00ff);
-            border: none;
-            border-radius: 30px;
-            padding: 10px 25px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* Профиль */
-        .profile-section {
-            padding: 20px;
-            text-align: center;
-        }
-
-        .avatar {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #b300ff, #6a00ff);
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-        }
-
-        .level-badge {
-            display: inline-block;
-            background: rgba(179, 0, 255, 0.2);
-            border-radius: 20px;
-            padding: 5px 15px;
-            font-size: 12px;
-            margin: 10px 0;
-        }
-
-        /* Скрытие элементов */
+        /* Скрытые секции */
         .hidden {
             display: none;
         }
 
-        /* Подсветка кнопки закрытия */
-        .close-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(179, 0, 255, 0.3);
-            border-radius: 12px;
-            padding: 8px 16px;
-            cursor: pointer;
-            font-size: 14px;
+        /* Сообщение о разработке */
+        .dev-message {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 28px;
+        }
+
+        .dev-message h3 {
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .dev-message p {
+            color: #aaa;
         }
     </style>
 </head>
@@ -257,248 +233,167 @@
 
 <div class="header">
     <div class="logo">
-        <div class="logo-icon">A</div>
+        <div class="logo-icon">
+            <span class="letter-a">A</span>
+            <span class="letter-m">M</span>
+        </div>
         <div class="logo-text">AuraMarket</div>
     </div>
-    <div class="balance-card">
-        <div class="balance-label">Баланс</div>
-        <div class="balance-value" id="balance">0 ₽</div>
+    <div class="balance-badge" style="font-size: 14px; background: rgba(179,0,255,0.2); padding: 6px 12px; border-radius: 20px;">
+        💎 Премиум
     </div>
 </div>
 
-<!-- Навигация по категориям -->
-<div class="categories">
-    <div class="category active" data-cat="all">Все</div>
-    <div class="category" data-cat="premium">Premium</div>
-    <div class="category" data-cat="keys">Ключи</div>
-    <div class="category" data-cat="accounts">Аккаунты</div>
-    <div class="category" data-cat="boost">Накрутка</div>
-</div>
+<div class="content" id="contentArea">
+    <!-- Каталог -->
+    <div id="catalogSection">
+        <div class="dev-message">
+            <h3>🛍️ Каталог</h3>
+            <p>❌ Каталог находится на технических работах и в скором времени будет работать.</p>
+            <p>✨ Следите за обновлениями в нашем канале!</p>
+            <div style="margin-top: 20px; font-size: 14px; color: #b300ff;">AuraMarket — скоро здесь будет всё!</div>
+        </div>
+    </div>
 
-<!-- Список товаров / Профиль / Корзина (вкладки) -->
-<div id="catalogSection">
-    <div class="products" id="productsContainer"></div>
-</div>
+    <!-- Профиль -->
+    <div id="profileSection" class="hidden">
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #b300ff, #6a00ff); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 36px;">👤</div>
+                <h3 id="profileName" style="margin-top: 12px;">Пользователь</h3>
+                <div id="profileUsername" style="color: #aaa; font-size: 14px;">@username</div>
+            </div>
+            <div class="stats-row">
+                <span class="stats-label">💰 Баланс</span>
+                <span class="stats-value" id="profileBalance">0 ₽</span>
+            </div>
+            <button class="btn-primary" id="supportBtn">📞 Обратиться в техподдержку</button>
+            <button class="btn-secondary" id="rulesBtn" style="margin-top: 10px;">📝 Правила и пользовательское соглашение</button>
+        </div>
+    </div>
 
-<div id="profileSection" class="hidden">
-    <div class="profile-section">
-        <div class="avatar">👤</div>
-        <h3 id="profileName">Пользователь</h3>
-        <div class="level-badge" id="profileLevel">🟣 Новичок</div>
-        <div class="balance-card" style="margin-top: 20px; display: inline-block;">
-            <div class="balance-label">Баланс</div>
-            <div class="balance-value" id="profileBalance">0 ₽</div>
+    <!-- Баланс / Статистика -->
+    <div id="balanceSection" class="hidden">
+        <div class="card">
+            <div class="stats-row">
+                <span class="stats-label">💰 Ваш баланс</span>
+                <span class="stats-value" id="balanceValue">0 ₽</span>
+            </div>
+            <div class="stats-row">
+                <span class="stats-label">|— Всего заказов</span>
+                <span class="stats-value" id="totalOrders">0</span>
+            </div>
+            <div class="stats-row">
+                <span class="stats-label">|— Активных заказов</span>
+                <span class="stats-value" id="activeOrders">0</span>
+            </div>
+            <div class="stats-row">
+                <span class="stats-label">|— Заказов на обработке</span>
+                <span class="stats-value" id="pendingOrders">0</span>
+            </div>
+            <button class="btn-primary" id="replenishBtn" style="margin-top: 20px;">💸 Пополнить баланс</button>
+            <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #aaa;">Способ пополнения скоро появится</div>
+        </div>
+    </div>
+
+    <!-- Корзина -->
+    <div id="cartSection" class="hidden">
+        <div class="dev-message">
+            <h3>🛒 Корзина</h3>
+            <p>❌ У вас ещё нету заказов в корзине.</p>
+            <p>🛍️ Добавляйте товары из каталога и они появятся здесь!</p>
         </div>
     </div>
 </div>
 
-<div id="cartSection" class="hidden">
-    <div class="products" id="cartContainer"></div>
-    <div style="padding: 20px; text-align: center;" id="emptyCart">Корзина пуста</div>
-</div>
-
-<!-- Панель корзины -->
-<div class="cart-panel">
-    <div class="cart-total">Итого: <span id="cartTotal">0</span> ₽</div>
-    <button class="checkout-btn" id="checkoutBtn">Оформить заказ</button>
+<div class="bottom-nav">
+    <button class="nav-item" data-tab="catalog">
+        <span class="nav-icon">🛍️</span>
+        <span>Каталог</span>
+    </button>
+    <button class="nav-item" data-tab="profile">
+        <span class="nav-icon">👤</span>
+        <span>Профиль</span>
+    </button>
+    <button class="nav-item" data-tab="balance">
+        <span class="nav-icon">💵</span>
+        <span>Баланс</span>
+    </button>
+    <button class="nav-item" data-tab="cart">
+        <span class="nav-icon">🛒</span>
+        <span>Корзина</span>
+    </button>
 </div>
 
 <script>
-    // Инициализация Telegram WebApp
     let tg = window.Telegram.WebApp;
     tg.expand();
     tg.MainButton.hide();
 
-    // Получение данных пользователя из Telegram
-    let user = tg.initDataUnsafe?.user || { id: 0, username: 'Гость', first_name: 'Пользователь' };
-    document.getElementById('profileName').innerText = user.first_name || user.username || 'Пользователь';
+    let user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
+    let username = user.username ? `@${user.username}` : `@user_${user.id}`;
+    let firstName = user.first_name || 'Пользователь';
 
-    // Баланс (позже можно подтягивать от бота)
-    let userBalance = 250; // временно, потом через бота
-    document.getElementById('balance').innerText = userBalance + ' ₽';
-    document.getElementById('profileBalance').innerText = userBalance + ' ₽';
+    document.getElementById('profileName').innerText = firstName;
+    document.getElementById('profileUsername').innerText = username;
 
-    // Товары (временный каталог)
-    const products = [
-        { id: 1, name: 'Telegram Premium (месяц)', price: 129, category: 'premium', emoji: '💎' },
-        { id: 2, name: 'Ключ Windows 11 Pro', price: 149, category: 'keys', emoji: '🔑' },
-        { id: 3, name: 'TikTok аккаунт (USA)', price: 89, category: 'accounts', emoji: '📱' },
-        { id: 4, name: 'Накрутка TikTok 1000 подписчиков', price: 79, category: 'boost', emoji: '📈' },
-        { id: 5, name: 'ChatGPT аккаунт', price: 49, category: 'accounts', emoji: '🤖' },
-        { id: 6, name: 'Discord аккаунт (Nitro)', price: 199, category: 'premium', emoji: '🎮' },
-        { id: 7, name: 'Steam ключ (игра)', price: 99, category: 'keys', emoji: '🎲' },
-        { id: 8, name: 'Instagram лайки (1000)', price: 59, category: 'boost', emoji: '❤️' }
-    ];
+    // Временные показатели (позже будут подтягиваться через API бота)
+    let userBalance = 250;
+    let userTotalOrders = 8;
+    let userActiveOrders = 3;
+    let userPendingOrders = 1;
 
-    // Корзина
-    let cart = [];
+    function updateBalanceUI() {
+        document.getElementById('profileBalance').innerText = userBalance + ' ₽';
+        document.getElementById('balanceValue').innerText = userBalance + ' ₽';
+        document.getElementById('totalOrders').innerText = userTotalOrders;
+        document.getElementById('activeOrders').innerText = userActiveOrders;
+        document.getElementById('pendingOrders').innerText = userPendingOrders;
+    }
+    updateBalanceUI();
 
-    // Текущая категория
-    let currentCategory = 'all';
+    // Табы
+    const sections = {
+        catalog: document.getElementById('catalogSection'),
+        profile: document.getElementById('profileSection'),
+        balance: document.getElementById('balanceSection'),
+        cart: document.getElementById('cartSection')
+    };
 
-    // Отображение товаров
-    function renderProducts() {
-        const container = document.getElementById('productsContainer');
-        let filtered = products;
-        if (currentCategory !== 'all') {
-            filtered = products.filter(p => p.category === currentCategory);
-        }
-        container.innerHTML = filtered.map(p => `
-            <div class="product-card" data-id="${p.id}">
-                <div class="product-image">${p.emoji}</div>
-                <div class="product-title">${p.name}</div>
-                <div class="product-price">${p.price} ₽</div>
-                <button class="buy-btn" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">В корзину</button>
-            </div>
-        `).join('');
-
-        // Обработчики для кнопок "В корзину"
-        document.querySelectorAll('.buy-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = parseInt(btn.dataset.id);
-                const name = btn.dataset.name;
-                const price = parseInt(btn.dataset.price);
-                addToCart({ id, name, price });
-            });
+    function showTab(tabId) {
+        Object.keys(sections).forEach(id => sections[id].classList.add('hidden'));
+        sections[tabId].classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            if (btn.dataset.tab === tabId) btn.classList.add('active');
+            else btn.classList.remove('active');
         });
     }
 
-    // Добавление в корзину
-    function addToCart(product) {
-        const existing = cart.find(item => item.id === product.id);
-        if (existing) {
-            existing.quantity += 1;
-        } else {
-            cart.push({ ...product, quantity: 1 });
-        }
-        updateCartUI();
-        tg.showPopup({ title: 'Добавлено', message: `${product.name} добавлен в корзину`, buttons: [{ type: 'ok' }] });
-    }
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => showTab(btn.dataset.tab));
+    });
 
-    // Обновление интерфейса корзины
-    function updateCartUI() {
-        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        document.getElementById('cartTotal').innerText = total;
-        
-        const cartContainer = document.getElementById('cartContainer');
-        const emptyCartDiv = document.getElementById('emptyCart');
-        
-        if (cart.length === 0) {
-            cartContainer.classList.add('hidden');
-            emptyCartDiv.classList.remove('hidden');
-        } else {
-            cartContainer.classList.remove('hidden');
-            emptyCartDiv.classList.add('hidden');
-            cartContainer.innerHTML = cart.map(item => `
-                <div class="product-card">
-                    <div class="product-title">${item.name}</div>
-                    <div class="product-price">${item.price} ₽ × ${item.quantity} = ${item.price * item.quantity} ₽</div>
-                    <button class="buy-btn" onclick="removeFromCart(${item.id})">Удалить</button>
-                </div>
-            `).join('');
-        }
-    }
+    // Кнопки действий
+    document.getElementById('supportBtn').addEventListener('click', () => {
+        tg.close();
+        // Открывает чат с ботом и сразу команду поддержки
+        window.location.href = 'https://t.me/MarketAura_bot?start=support';
+    });
 
-    // Удаление из корзины
-    window.removeFromCart = (id) => {
-        cart = cart.filter(item => item.id !== id);
-        updateCartUI();
-    };
+    document.getElementById('rulesBtn').addEventListener('click', () => {
+        window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank');
+    });
 
-    // Оформление заказа (отправка в бота)
-    function checkout() {
-        if (cart.length === 0) {
-            tg.showPopup({ title: 'Корзина пуста', message: 'Добавьте товары для заказа', buttons: [{ type: 'ok' }] });
-            return;
-        }
-        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        if (userBalance < total) {
-            tg.showPopup({ title: 'Недостаточно средств', message: `Требуется ${total} ₽. Пополните баланс.`, buttons: [{ type: 'ok' }] });
-            return;
-        }
-        // Отправка данных в бота
-        const orderData = { action: 'order', items: cart, total: total, user_id: user.id };
-        tg.sendData(JSON.stringify(orderData));
-        tg.showPopup({ title: 'Заказ оформлен', message: 'Ожидайте выдачу товаров в боте', buttons: [{ type: 'ok' }] });
-        cart = [];
-        updateCartUI();
-    }
-
-    document.getElementById('checkoutBtn').addEventListener('click', checkout);
-
-    // Переключение категорий
-    document.querySelectorAll('.category').forEach(cat => {
-        cat.addEventListener('click', () => {
-            document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
-            cat.classList.add('active');
-            currentCategory = cat.dataset.cat;
-            renderProducts();
+    document.getElementById('replenishBtn').addEventListener('click', () => {
+        tg.showPopup({
+            title: '💸 Пополнение баланса',
+            message: '🔨 Способ пополнения временно недоступен.\nСкоро мы добавим удобные варианты оплаты.',
+            buttons: [{ type: 'ok' }]
         });
     });
 
-    // Простая навигация по вкладкам (для демо)
-    let currentTab = 'catalog';
-
-    function showTab(tab) {
-        currentTab = tab;
-        document.getElementById('catalogSection').classList.add('hidden');
-        document.getElementById('profileSection').classList.add('hidden');
-        document.getElementById('cartSection').classList.add('hidden');
-        if (tab === 'catalog') document.getElementById('catalogSection').classList.remove('hidden');
-        if (tab === 'profile') document.getElementById('profileSection').classList.remove('hidden');
-        if (tab === 'cart') document.getElementById('cartSection').classList.remove('hidden');
-    }
-
-    // Кнопки навигации внизу (добавим три большие кнопки в меню бота)
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.bottom = '70px';
-    container.style.left = '0';
-    container.style.right = '0';
-    container.style.display = 'flex';
-    container.style.justifyContent = 'center';
-    container.style.gap = '20px';
-    container.style.padding = '10px';
-    container.style.background = 'rgba(10,10,20,0.9)';
-    container.style.backdropFilter = 'blur(10px)';
-    container.style.borderTop = '1px solid rgba(179,0,255,0.3)';
-    const btnCatalog = document.createElement('button');
-    btnCatalog.innerText = '🛍️ Каталог';
-    btnCatalog.style.padding = '8px 20px';
-    btnCatalog.style.borderRadius = '30px';
-    btnCatalog.style.border = 'none';
-    btnCatalog.style.background = '#b300ff';
-    btnCatalog.style.color = 'white';
-    btnCatalog.style.cursor = 'pointer';
-    btnCatalog.onclick = () => showTab('catalog');
-    const btnProfile = document.createElement('button');
-    btnProfile.innerText = '👤 Профиль';
-    btnProfile.style.padding = '8px 20px';
-    btnProfile.style.borderRadius = '30px';
-    btnProfile.style.border = '1px solid rgba(179,0,255,0.5)';
-    btnProfile.style.background = 'transparent';
-    btnProfile.style.color = 'white';
-    btnProfile.style.cursor = 'pointer';
-    btnProfile.onclick = () => showTab('profile');
-    const btnCart = document.createElement('button');
-    btnCart.innerText = '🛒 Корзина';
-    btnCart.style.padding = '8px 20px';
-    btnCart.style.borderRadius = '30px';
-    btnCart.style.border = '1px solid rgba(179,0,255,0.5)';
-    btnCart.style.background = 'transparent';
-    btnCart.style.color = 'white';
-    btnCart.style.cursor = 'pointer';
-    btnCart.onclick = () => { showTab('cart'); updateCartUI(); };
-    container.appendChild(btnCatalog);
-    container.appendChild(btnProfile);
-    container.appendChild(btnCart);
-    document.body.appendChild(container);
-
     // Показываем каталог по умолчанию
     showTab('catalog');
-    renderProducts();
 </script>
-
 </body>
 </html>
