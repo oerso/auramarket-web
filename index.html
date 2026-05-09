@@ -10,390 +10,184 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
         }
-
         body {
-            background: linear-gradient(145deg, #0a0a0f 0%, #120a1f 50%, #1a0b2e 100%);
-            font-family: 'Segoe UI', 'Montserrat', system-ui, -apple-system, sans-serif;
-            color: #fff;
+            background: radial-gradient(circle at 10% 20%, #0a0a0f, #05050a);
+            font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+            color: white;
             min-height: 100vh;
             padding-bottom: 80px;
         }
-
-        /* Анимации */
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px rgba(179, 0, 255, 0.3); }
-            100% { box-shadow: 0 0 20px rgba(179, 0, 255, 0.7); }
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-3px); }
-            100% { transform: translateY(0px); }
-        }
-
-        /* Кастомный скролл */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #1a1a2e; }
-        ::-webkit-scrollbar-thumb { background: #b300ff; border-radius: 4px; }
-
-        /* Шапка с логотипом */
-        .header {
-            background: rgba(10, 10, 20, 0.7);
-            backdrop-filter: blur(15px);
-            padding: 18px 20px;
+        /* логотип скрещённый A+М */
+        .logo-merged {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid rgba(179, 0, 255, 0.2);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #1a0b2e, #0a0a0f);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 28px;
-            position: relative;
-            animation: glow 2s infinite alternate;
-            border: 1px solid rgba(179, 0, 255, 0.4);
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 8px;
         }
-
-        .logo-icon .letter-a {
-            position: absolute;
-            left: 12px;
-            top: 8px;
-            color: #fff;
-            text-shadow: 0 0 8px #b300ff;
-        }
-
-        .logo-icon .letter-m {
-            position: absolute;
-            right: 12px;
-            bottom: 8px;
-            color: #fff;
-            text-shadow: 0 0 8px #6a00ff;
-        }
-
-        .logo-text {
-            font-size: 22px;
-            font-weight: bold;
-            background: linear-gradient(90deg, #ffffff, #b300ff, #6a00ff);
+        .letter {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff, #b300ff, #6a00ff);
             background-size: 200% auto;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            animation: shine 3s infinite linear;
+            text-shadow: 0 0 12px rgba(179,0,255,0.6);
+            transform: rotate(-2deg);
         }
-
-        @keyframes shine {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
+        .letter.m {
+            transform: rotate(4deg) translateX(-5px);
         }
-
-        /* Основной контент */
-        .content {
-            padding: 20px;
-        }
-
-        /* Карточки */
-        .card {
-            background: rgba(20, 20, 40, 0.5);
-            backdrop-filter: blur(10px);
-            border-radius: 28px;
+        /* карточки */
+        .glass-card {
+            background: rgba(20,20,40,0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
             padding: 24px;
-            border: 1px solid rgba(179, 0, 255, 0.2);
-            transition: all 0.3s ease;
+            margin: 16px;
+            border: 1px solid rgba(179,0,255,0.3);
+            transition: 0.2s;
         }
-
-        .card:hover {
-            border-color: rgba(179, 0, 255, 0.6);
-            transform: translateY(-2px);
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(179,0,255,0.2);
         }
-
-        /* Кнопки */
         .btn-primary {
             background: linear-gradient(90deg, #b300ff, #6a00ff);
             border: none;
-            border-radius: 36px;
-            padding: 12px 24px;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
             width: 100%;
-            margin-top: 12px;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.97);
-        }
-
-        .btn-secondary {
-            background: rgba(179, 0, 255, 0.15);
-            border: 1px solid rgba(179, 0, 255, 0.4);
-            border-radius: 36px;
-            padding: 12px 20px;
+            padding: 14px;
+            border-radius: 48px;
+            font-weight: bold;
             color: white;
+            font-size: 16px;
+            margin-top: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: 0.2s;
         }
-
-        /* Нижняя навигация */
+        .btn-primary:active { transform: scale(0.97); }
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(8, 8, 16, 0.95);
+            background: rgba(8,8,16,0.95);
             backdrop-filter: blur(20px);
             display: flex;
             justify-content: space-around;
             padding: 8px 16px 20px;
-            border-top: 1px solid rgba(179, 0, 255, 0.3);
-            z-index: 200;
+            border-top: 1px solid #b300ff;
         }
-
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
             background: transparent;
             border: none;
             color: #aaa;
             font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            padding: 6px 12px;
-            border-radius: 30px;
         }
-
         .nav-item.active {
             color: #b300ff;
-            text-shadow: 0 0 6px rgba(179, 0, 255, 0.5);
+            text-shadow: 0 0 6px #b300ff;
         }
-
-        .nav-icon {
-            font-size: 24px;
-        }
-
-        /* Статистика */
-        .stats-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(179, 0, 255, 0.1);
-        }
-
-        .stats-label {
-            color: #aaa;
-        }
-
-        .stats-value {
-            font-weight: bold;
-            color: #b300ff;
-        }
-
-        /* Скрытые секции */
-        .hidden {
-            display: none;
-        }
-
-        /* Сообщение о разработке */
-        .dev-message {
-            text-align: center;
-            padding: 40px 20px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 28px;
-        }
-
-        .dev-message h3 {
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-
-        .dev-message p {
-            color: #aaa;
-        }
+        .hidden { display: none; }
+        .dev-message { text-align: center; padding: 40px 20px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="logo">
-        <div class="logo-icon">
-            <span class="letter-a">A</span>
-            <span class="letter-m">M</span>
-        </div>
-        <div class="logo-text">AuraMarket</div>
+<div class="glass-card" style="text-align: center;">
+    <div class="logo-merged">
+        <div class="letter">A</div>
+        <div class="letter m">M</div>
     </div>
-    <div class="balance-badge" style="font-size: 14px; background: rgba(179,0,255,0.2); padding: 6px 12px; border-radius: 20px;">
-        💎 Премиум
-    </div>
+    <div style="font-size: 22px; font-weight: bold;">AuraMarket</div>
+    <div style="font-size: 12px; color: #b300ff;">⚡ премиум цифровой магазин</div>
 </div>
 
-<div class="content" id="contentArea">
-    <!-- Каталог -->
-    <div id="catalogSection">
-        <div class="dev-message">
-            <h3>🛍️ Каталог</h3>
-            <p>❌ Каталог находится на технических работах и в скором времени будет работать.</p>
-            <p>✨ Следите за обновлениями в нашем канале!</p>
-            <div style="margin-top: 20px; font-size: 14px; color: #b300ff;">AuraMarket — скоро здесь будет всё!</div>
-        </div>
-    </div>
-
-    <!-- Профиль -->
-    <div id="profileSection" class="hidden">
-        <div class="card">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #b300ff, #6a00ff); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 36px;">👤</div>
-                <h3 id="profileName" style="margin-top: 12px;">Пользователь</h3>
-                <div id="profileUsername" style="color: #aaa; font-size: 14px;">@username</div>
-            </div>
-            <div class="stats-row">
-                <span class="stats-label">💰 Баланс</span>
-                <span class="stats-value" id="profileBalance">0 ₽</span>
-            </div>
-            <button class="btn-primary" id="supportBtn">📞 Обратиться в техподдержку</button>
-            <button class="btn-secondary" id="rulesBtn" style="margin-top: 10px;">📝 Правила и пользовательское соглашение</button>
-        </div>
-    </div>
-
-    <!-- Баланс / Статистика -->
-    <div id="balanceSection" class="hidden">
-        <div class="card">
-            <div class="stats-row">
-                <span class="stats-label">💰 Ваш баланс</span>
-                <span class="stats-value" id="balanceValue">0 ₽</span>
-            </div>
-            <div class="stats-row">
-                <span class="stats-label">|— Всего заказов</span>
-                <span class="stats-value" id="totalOrders">0</span>
-            </div>
-            <div class="stats-row">
-                <span class="stats-label">|— Активных заказов</span>
-                <span class="stats-value" id="activeOrders">0</span>
-            </div>
-            <div class="stats-row">
-                <span class="stats-label">|— Заказов на обработке</span>
-                <span class="stats-value" id="pendingOrders">0</span>
-            </div>
-            <button class="btn-primary" id="replenishBtn" style="margin-top: 20px;">💸 Пополнить баланс</button>
-            <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #aaa;">Способ пополнения скоро появится</div>
-        </div>
-    </div>
-
-    <!-- Корзина -->
-    <div id="cartSection" class="hidden">
-        <div class="dev-message">
-            <h3>🛒 Корзина</h3>
-            <p>❌ У вас ещё нету заказов в корзине.</p>
-            <p>🛍️ Добавляйте товары из каталога и они появятся здесь!</p>
-        </div>
-    </div>
-</div>
+<div id="content"></div>
 
 <div class="bottom-nav">
-    <button class="nav-item" data-tab="catalog">
-        <span class="nav-icon">🛍️</span>
-        <span>Каталог</span>
-    </button>
-    <button class="nav-item" data-tab="profile">
-        <span class="nav-icon">👤</span>
-        <span>Профиль</span>
-    </button>
-    <button class="nav-item" data-tab="balance">
-        <span class="nav-icon">💵</span>
-        <span>Баланс</span>
-    </button>
-    <button class="nav-item" data-tab="cart">
-        <span class="nav-icon">🛒</span>
-        <span>Корзина</span>
-    </button>
+    <button class="nav-item" data-tab="catalog"><span>🛍️</span><span>Каталог</span></button>
+    <button class="nav-item" data-tab="profile"><span>👤</span><span>Профиль</span></button>
+    <button class="nav-item" data-tab="balance"><span>💵</span><span>Баланс</span></button>
+    <button class="nav-item" data-tab="cart"><span>🛒</span><span>Корзина</span></button>
 </div>
 
 <script>
-    let tg = window.Telegram.WebApp;
+    const tg = window.Telegram.WebApp;
     tg.expand();
     tg.MainButton.hide();
+    const user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
 
-    let user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
-    let username = user.username ? `@${user.username}` : `@user_${user.id}`;
-    let firstName = user.first_name || 'Пользователь';
+    let balance = 0;
+    let totalOrders = 0, activeOrders = 0, pendingOrders = 0;
 
-    document.getElementById('profileName').innerText = firstName;
-    document.getElementById('profileUsername').innerText = username;
-
-    // Временные показатели (позже будут подтягиваться через API бота)
-    let userBalance = 250;
-    let userTotalOrders = 8;
-    let userActiveOrders = 3;
-    let userPendingOrders = 1;
-
-    function updateBalanceUI() {
-        document.getElementById('profileBalance').innerText = userBalance + ' ₽';
-        document.getElementById('balanceValue').innerText = userBalance + ' ₽';
-        document.getElementById('totalOrders').innerText = userTotalOrders;
-        document.getElementById('activeOrders').innerText = userActiveOrders;
-        document.getElementById('pendingOrders').innerText = userPendingOrders;
+    async function fetchUserData() {
+        // здесь позже можно реально запросить через бота, но пока оставим демо-данные
+        balance = 1275;
+        totalOrders = 12;
+        activeOrders = 4;
+        pendingOrders = 2;
+        renderCurrentTab();
     }
-    updateBalanceUI();
 
-    // Табы
     const sections = {
-        catalog: document.getElementById('catalogSection'),
-        profile: document.getElementById('profileSection'),
-        balance: document.getElementById('balanceSection'),
-        cart: document.getElementById('cartSection')
+        catalog: () => `<div class="dev-message"><h3>🛍️ Каталог</h3><p>❌ Каталог находится на технических работах и в ближайшее время будет доступен.</p><p>✨ Следите за новостями!</p></div>`,
+        profile: () => `<div class="glass-card">
+            <div style="text-align:center"><span style="font-size:48px;">👤</span><h3>${user.first_name}</h3><div>@{username}</div></div>
+            <div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div>
+            <button class="btn-primary" id="supportBtn">📞 Техподдержка</button>
+            <button class="btn-primary" id="rulesBtn">📝 Правила</button>
+        </div>`,
+        balance: () => `<div class="glass-card">
+            <div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div>
+            <div class="stat-row"><span>|— Заказов</span><span>${totalOrders}</span></div>
+            <div class="stat-row"><span>|— Активных заказов</span><span>${activeOrders}</span></div>
+            <div class="stat-row"><span>|— Заказов на обработке</span><span>${pendingOrders}</span></div>
+            <button class="btn-primary" id="replenishBtn">💸 Пополнить баланс</button>
+        </div>`,
+        cart: () => `<div class="dev-message"><h3>🛒 Корзина</h3><p>❌ У вас пока нет товаров в корзине</p><p>Выберите товары в каталоге и они появятся здесь.</p></div>`
     };
 
-    function showTab(tabId) {
-        Object.keys(sections).forEach(id => sections[id].classList.add('hidden'));
-        sections[tabId].classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach(btn => {
-            if (btn.dataset.tab === tabId) btn.classList.add('active');
-            else btn.classList.remove('active');
+    let currentTab = 'catalog';
+
+    function renderCurrentTab() {
+        const container = document.getElementById('content');
+        if(sections[currentTab]) container.innerHTML = sections[currentTab]();
+        else container.innerHTML = '<div class="dev-message">Ошибка</div>';
+        attachButtons();
+    }
+
+    function attachButtons() {
+        document.getElementById('supportBtn')?.addEventListener('click', () => {
+            window.location.href = 'https://t.me/MarketAura_bot?start=support';
+        });
+        document.getElementById('rulesBtn')?.addEventListener('click', () => {
+            window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank');
+        });
+        document.getElementById('replenishBtn')?.addEventListener('click', () => {
+            tg.showPopup({ title: 'Пополнение', message: '🔨 Способ пополнения временно недоступен. Скоро добавим!', buttons: [{type:'ok'}] });
         });
     }
 
     document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.addEventListener('click', () => showTab(btn.dataset.tab));
-    });
-
-    // Кнопки действий
-    document.getElementById('supportBtn').addEventListener('click', () => {
-        tg.close();
-        // Открывает чат с ботом и сразу команду поддержки
-        window.location.href = 'https://t.me/MarketAura_bot?start=support';
-    });
-
-    document.getElementById('rulesBtn').addEventListener('click', () => {
-        window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank');
-    });
-
-    document.getElementById('replenishBtn').addEventListener('click', () => {
-        tg.showPopup({
-            title: '💸 Пополнение баланса',
-            message: '🔨 Способ пополнения временно недоступен.\nСкоро мы добавим удобные варианты оплаты.',
-            buttons: [{ type: 'ok' }]
+        btn.addEventListener('click', (e) => {
+            currentTab = btn.dataset.tab;
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCurrentTab();
         });
     });
-
-    // Показываем каталог по умолчанию
-    showTab('catalog');
+    fetchUserData();
 </script>
 </body>
 </html>
