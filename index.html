@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -6,32 +6,22 @@
     <title>AuraMarket | Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: radial-gradient(circle at 20% 30%, #0a0a0f, #030308);
-            font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Montserrat', system-ui;
             color: white;
             min-height: 100vh;
             padding-bottom: 85px;
         }
-        /* анимированное свечение */
-        .glow {
-            animation: pulse 3s infinite;
-        }
-        @keyframes pulse {
-            0% { text-shadow: 0 0 2px #b300ff; }
-            100% { text-shadow: 0 0 15px #b300ff; }
-        }
         .glass-card {
-            background: rgba(20, 20, 40, 0.65);
+            background: rgba(20,20,40,0.65);
             backdrop-filter: blur(16px);
             border-radius: 32px;
-            padding: 22px;
+            padding: 20px;
             margin: 16px;
             border: 1px solid rgba(179,0,255,0.35);
-            transition: 0.25s;
         }
-        .glass-card:hover { border-color: #b300ff; transform: translateY(-3px); }
         .btn-primary {
             background: linear-gradient(90deg, #b300ff, #6a00ff);
             border: none;
@@ -39,12 +29,9 @@
             padding: 14px;
             border-radius: 60px;
             font-weight: bold;
-            font-size: 16px;
             color: white;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .btn-primary:active { transform: scale(0.96); }
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -53,14 +40,11 @@
         }
         .product-card {
             background: rgba(25,25,50,0.7);
-            backdrop-filter: blur(10px);
             border-radius: 28px;
             padding: 16px;
             border: 1px solid rgba(179,0,255,0.25);
-            transition: 0.2s;
         }
-        .product-card:hover { border-color: #b300ff; transform: scale(1.01); }
-        .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(179,0,255,0.2); }
+        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(179,0,255,0.2); }
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -83,12 +67,10 @@
             align-items: center;
             gap: 4px;
             cursor: pointer;
-            transition: 0.2s;
             padding: 6px 12px;
             border-radius: 40px;
         }
-        .nav-item.active { color: #b300ff; text-shadow: 0 0 6px #b300ff; background: rgba(179,0,255,0.15); }
-        .hidden { display: none; }
+        .nav-item.active { color: #b300ff; background: rgba(179,0,255,0.15); }
         .logo-3d {
             width: 70px; height: 70px;
             background: linear-gradient(135deg, #1e0b32, #0a0a0f);
@@ -98,7 +80,6 @@
             align-items: center;
             justify-content: center;
             gap: 5px;
-            box-shadow: 0 0 20px #b300ff;
         }
         .logo-letter { font-size: 42px; font-weight: 900; background: linear-gradient(145deg, #fff, #b300ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
     </style>
@@ -108,7 +89,7 @@
 <div class="glass-card" style="text-align:center">
     <div class="logo-3d"><span class="logo-letter">A</span><span class="logo-letter">M</span></div>
     <div style="font-size:26px; font-weight:800;">AuraMarket</div>
-    <div style="font-size:12px; color:#b300ff;">премиум цифровой магазин</div>
+    <div style="font-size:12px; color:#b300ff;">Премиум магазин</div>
 </div>
 
 <div id="content"></div>
@@ -124,7 +105,10 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
     const user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
-    let balance = 0, totalOrders = 0, pendingOrders = 0;
+
+    let balance = 0;
+    let totalOrders = 0;
+    let pendingOrders = 0;
     let cart = [];
     let currentTab = 'catalog';
 
@@ -139,93 +123,160 @@
         { id:8, name:"Instagram 1000 лайков", price:59, emoji:"❤️", category:"boost" }
     ];
 
-    async function fetchBalance() {
-        const data = await tg.sendData(JSON.stringify({ action: 'get_data' }));
-        // Здесь на практике получим ответ, сейчас демо
-        balance = 12750; totalOrders = 12; pendingOrders = 2;
+    // ЗАПРОС РЕАЛЬНЫХ ДАННЫХ У БОТА
+    async function fetchUserData() {
+        try {
+            const response = await tg.sendData(JSON.stringify({ action: 'get_data' }));
+            if (response) {
+                const data = JSON.parse(response);
+                balance = data.balance || 0;
+                totalOrders = data.total_orders || 0;
+                pendingOrders = data.pending_orders || 0;
+            }
+        } catch(e) {
+            console.log("Ошибка загрузки", e);
+        }
         renderCurrentTab();
     }
 
     function renderCatalog(activeCat='all') {
         let filtered = products;
-        if(activeCat!=='all') filtered = products.filter(p=>p.category===activeCat);
-        return `<div style="padding:10px"><div style="display:flex; gap:10px; overflow-x:auto; margin-bottom:16px;">
-            <button class="category-btn" data-cat="all">Все</button>
-            <button class="category-btn" data-cat="premium">💎 Premium</button>
-            <button class="category-btn" data-cat="keys">🔑 Ключи</button>
-            <button class="category-btn" data-cat="accounts">👤 Аккаунты</button>
-            <button class="category-btn" data-cat="boost">📈 Накрутка</button>
-        </div><div class="products-grid" id="productsGrid"></div></div>`;
+        if(activeCat !== 'all') filtered = products.filter(p => p.category === activeCat);
+        return `<div style="padding:10px">
+            <div style="display:flex; gap:10px; overflow-x:auto; margin-bottom:16px;">
+                <button class="category-btn" data-cat="all">Все</button>
+                <button class="category-btn" data-cat="premium">💎 Premium</button>
+                <button class="category-btn" data-cat="keys">🔑 Ключи</button>
+                <button class="category-btn" data-cat="accounts">👤 Аккаунты</button>
+                <button class="category-btn" data-cat="boost">📈 Накрутка</button>
+            </div>
+            <div class="products-grid" id="productsGrid"></div>
+        </div>`;
     }
 
     function renderProfile() {
-        return `<div class="glass-card"><div style="text-align:center"><span style="font-size:64px;">👑</span><h2>${user.first_name}</h2><div>@${user.username}</div><div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div><div class="stat-row"><span>📦 Заказов</span><span>${totalOrders}</span></div></div><button class="btn-primary" id="supportBtn">📞 Техподдержка</button><button class="btn-primary" id="rulesBtn">📝 Правила</button></div>`;
+        return `<div class="glass-card">
+            <div style="text-align:center">
+                <span style="font-size:64px;">👑</span>
+                <h2>${user.first_name}</h2>
+                <div>@${user.username}</div>
+                <div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div>
+                <div class="stat-row"><span>📦 Заказов</span><span>${totalOrders}</span></div>
+            </div>
+            <button class="btn-primary" id="supportBtn">📞 Техподдержка</button>
+            <button class="btn-primary" id="rulesBtn">📝 Правила</button>
+        </div>`;
     }
 
     function renderBalance() {
-        return `<div class="glass-card"><div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div><div class="stat-row"><span>📦 Всего заказов</span><span>${totalOrders}</span></div><div class="stat-row"><span>⚙️ Активных заказов</span><span>${pendingOrders}</span></div><button class="btn-primary" id="replenishBtn">💸 Пополнить баланс</button></div>`;
+        return `<div class="glass-card">
+            <div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div>
+            <div class="stat-row"><span>📦 Всего заказов</span><span>${totalOrders}</span></div>
+            <div class="stat-row"><span>⚙️ В процессе</span><span>${pendingOrders}</span></div>
+            <button class="btn-primary" id="replenishBtn">💸 Пополнить баланс</button>
+        </div>`;
     }
 
     function renderCart() {
-        if(cart.length===0) return `<div class="glass-card" style="text-align:center">🛒 Корзина пуста</div>`;
-        let total = cart.reduce((s,i)=>s + i.price * i.qty,0);
-        return `<div class="glass-card">${cart.map(i=>`<div class="stat-row"><span>${i.name} x${i.qty}</span><span>${i.price*i.qty} ₽</span><button class="del-cart" data-id="${i.id}">❌</button></div>`).join('')}<div class="stat-row"><strong>Итого</strong><strong>${total} ₽</strong></div><button class="btn-primary" id="orderBtn">Оформить заказ</button></div>`;
+        if(cart.length === 0) return `<div class="glass-card" style="text-align:center">🛒 Корзина пуста</div>`;
+        let total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+        return `<div class="glass-card">
+            ${cart.map(i => `<div class="stat-row"><span>${i.name} x${i.qty}</span><span>${i.price * i.qty} ₽</span><button class="del-cart" data-id="${i.id}">❌</button></div>`).join('')}
+            <div class="stat-row"><strong>Итого</strong><strong>${total} ₽</strong></div>
+            <button class="btn-primary" id="orderBtn">Оформить заказ</button>
+        </div>`;
     }
 
     function renderFaq() {
-        return `<div class="glass-card"><h3>🔍 Частые вопросы</h3><p><strong>⚡ Мгновенная выдача</strong> — данные сразу после оплаты</p><p><strong>🛡 Гарантия 30 дней</strong> — замена при проблемах</p><p><strong>💳 Оплата:</strong> карты, Tonkeeper, Stars</p><p><strong>📞</strong> Поддержка в тикетах</p></div>`;
+        return `<div class="glass-card">
+            <h3>🔍 Частые вопросы</h3>
+            <p>⚡ Мгновенная выдача</p>
+            <p>🛡 Гарантия 30 дней</p>
+            <p>💳 Оплата: карты, крипта, Stars</p>
+            <p>📞 Поддержка в тикетах</p>
+        </div>`;
     }
 
     function renderCurrentTab() {
         const container = document.getElementById('content');
-        if(currentTab==='catalog') container.innerHTML = renderCatalog();
-        else if(currentTab==='profile') container.innerHTML = renderProfile();
-        else if(currentTab==='balance') container.innerHTML = renderBalance();
-        else if(currentTab==='cart') container.innerHTML = renderCart();
-        else if(currentTab==='faq') container.innerHTML = renderFaq();
+        if(currentTab === 'catalog') container.innerHTML = renderCatalog();
+        else if(currentTab === 'profile') container.innerHTML = renderProfile();
+        else if(currentTab === 'balance') container.innerHTML = renderBalance();
+        else if(currentTab === 'cart') container.innerHTML = renderCart();
+        else if(currentTab === 'faq') container.innerHTML = renderFaq();
 
-        if(currentTab==='catalog') {
+        if(currentTab === 'catalog') {
             const grid = document.getElementById('productsGrid');
             if(grid) {
-                grid.innerHTML = products.map(p => `<div class="product-card"><div style="font-size:28px;">${p.emoji}</div><h3>${p.name}</h3><div class="stat-row"><span>💰 Цена</span><span>${p.price} ₽</span></div><button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">В корзину</button></div>`).join('');
-                document.querySelectorAll('.add-to-cart').forEach(btn => btn.addEventListener('click', () => {
-                    const id=parseInt(btn.dataset.id), name=btn.dataset.name, price=parseInt(btn.dataset.price);
-                    const exist=cart.find(i=>i.id===id);
-                    if(exist) exist.qty++; else cart.push({id,name,price,qty:1});
-                    if(currentTab==='cart') renderCurrentTab();
-                    tg.showPopup({title:"Добавлено", message:`${name} в корзине`, buttons:[{type:"ok"}]});
-                }));
-                document.querySelectorAll('.category-btn').forEach(btn=>btn.onclick=()=>renderCatalog(btn.dataset.cat));
+                grid.innerHTML = products.map(p => `<div class="product-card">
+                    <div>${p.emoji}</div>
+                    <h3>${p.name}</h3>
+                    <div class="stat-row"><span>💰 ${p.price} ₽</span></div>
+                    <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">В корзину</button>
+                </div>`).join('');
+                
+                document.querySelectorAll('.add-to-cart').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = parseInt(btn.dataset.id);
+                        const name = btn.dataset.name;
+                        const price = parseInt(btn.dataset.price);
+                        const exist = cart.find(i => i.id === id);
+                        if(exist) exist.qty++;
+                        else cart.push({id, name, price, qty: 1});
+                        if(currentTab === 'cart') renderCurrentTab();
+                        tg.showPopup({title: "Добавлено", message: `${name} в корзине`, buttons: [{type:"ok"}]});
+                    });
+                });
+                
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.onclick = () => renderCatalog(btn.dataset.cat);
+                });
             }
         }
-        if(currentTab==='cart') {
-            document.querySelectorAll('.del-cart').forEach(btn=>btn.addEventListener('click',()=>{
-                cart = cart.filter(i=>i.id!==parseInt(btn.dataset.id));
-                renderCurrentTab();
-            }));
-            document.getElementById('orderBtn')?.addEventListener('click', async()=>{
-                const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
-                if(balance>=total) {
-                    const resp = await tg.sendData(JSON.stringify({action:'order', items:cart, total}));
-                    tg.showPopup({title:"Успех", message:"Заказ оформлен! Товары выданы в бота.", buttons:[{type:"ok"}]});
-                    cart=[];
-                    await fetchBalance();
+        
+        if(currentTab === 'cart') {
+            document.querySelectorAll('.del-cart').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    cart = cart.filter(i => i.id !== parseInt(btn.dataset.id));
                     renderCurrentTab();
-                } else tg.showPopup({title:"Ошибка", message:"Недостаточно средств", buttons:[{type:"ok"}]});
+                });
+            });
+            
+            document.getElementById('orderBtn')?.addEventListener('click', async () => {
+                const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+                if(balance >= total) {
+                    const response = await tg.sendData(JSON.stringify({action: 'order', items: cart, total: total}));
+                    const result = JSON.parse(response);
+                    if(result.success) {
+                        balance = result.new_balance;
+                        totalOrders++;
+                        cart = [];
+                        renderCurrentTab();
+                        tg.showPopup({title: "✅ Успех", message: "Заказ оформлен! Товар выдан в боте.", buttons: [{type:"ok"}]});
+                    } else {
+                        tg.showPopup({title: "Ошибка", message: result.error, buttons: [{type:"ok"}]});
+                    }
+                } else {
+                    tg.showPopup({title: "Ошибка", message: "Недостаточно средств", buttons: [{type:"ok"}]});
+                }
             });
         }
-        document.getElementById('supportBtn')?.addEventListener('click',()=>window.open('https://t.me/MarketAura_bot?start=support'));
-        document.getElementById('rulesBtn')?.addEventListener('click',()=>window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila','_blank'));
-        document.getElementById('replenishBtn')?.addEventListener('click',()=>tg.showPopup({title:"Пополнение", message:"Способ скоро появится", buttons:[{type:"ok"}]}));
+        
+        document.getElementById('supportBtn')?.addEventListener('click', () => window.open('https://t.me/MarketAura_bot?start=support'));
+        document.getElementById('rulesBtn')?.addEventListener('click', () => window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank'));
+        document.getElementById('replenishBtn')?.addEventListener('click', () => tg.showPopup({title: "Пополнение", message: "Способ скоро появится", buttons: [{type:"ok"}]}));
     }
 
-    document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{
-        currentTab=btn.dataset.tab;
-        document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        renderCurrentTab();
-    }));
-    fetchBalance();
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentTab = btn.dataset.tab;
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCurrentTab();
+        });
+    });
+    
+    fetchUserData();
 </script>
 </body>
 </html>
