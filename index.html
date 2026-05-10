@@ -140,6 +140,7 @@
 </div>
 
 <script>
+    // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
     const tg = window.Telegram.WebApp;
     tg.expand();
     const user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
@@ -148,70 +149,50 @@
     
     let balance = 0, totalOrders = 0, pendingOrders = 0;
     let cart = [];
-    let currentTab = 'catalog';
     let allProducts = [];
     let currentCategory = 'all';
     let categories = new Set();
+    let currentTab = 'catalog';
     
-    let editingProductId = null;
-    let currentProductId = null;
-    let currentProductName = null;
-    
+    // ==================== API ====================
     async function sendRequest(action, data = {}) {
         data.action = action;
         const response = await tg.sendData(JSON.stringify(data));
-        return JSON.parse(response);
+        try { return JSON.parse(response); } catch(e) { return {}; }
     }
     
-    async function fetchUserData() {
-        try {
-            const data = await sendRequest('get_data');
-            balance = data.balance || 0;
-            totalOrders = data.total_orders || 0;
-            pendingOrders = data.pending_orders || 0;
-        } catch(e) { console.log(e); }
+    async function loadData() {
+        let data = await sendRequest('get_data');
+        balance = data.balance || 0;
+        totalOrders = data.total_orders || 0;
+        pendingOrders = data.pending_orders || 0;
+        let prodData = await sendRequest('get_products');
+        allProducts = prodData.products || [];
+        categories.clear();
+        categories.add('all');
+        allProducts.forEach(p => categories.add(p.category));
     }
     
-    async function fetchProducts() {
-        try {
-            const data = await sendRequest('get_products');
-            if (data.products) {
-                allProducts = data.products;
-                categories.clear();
-                categories.add('all');
-                allProducts.forEach(p => categories.add(p.category));
-                renderCurrentTab();
-            }
-        } catch(e) { console.log(e); }
-    }
-    
+    // ==================== ОТРИСОВКА ====================
     function renderCatalog() {
-        let filtered = allProducts;
-        if (currentCategory !== 'all') {
-            filtered = allProducts.filter(p => p.category === currentCategory);
-        }
-        const categoryChips = Array.from(categories).map(cat => 
-            `<span class="category-chip ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'Все' : cat}</span>`
-        ).join('');
-        const productsHtml = filtered.map(p => `
+        let filtered = currentCategory === 'all' ? allProducts : allProducts.filter(p => p.category === currentCategory);
+        let chips = Array.from(categories).map(cat => `<span class="category-chip ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'Все' : cat}</span>`).join('');
+        let productsHtml = filtered.map(p => `
             <div class="product-card">
                 <h3>${p.name}</h3>
                 <div class="stat-row"><span>💰 Цена</span><span>${p.price} ₽</span></div>
                 <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">В корзину</button>
             </div>
         `).join('');
-        return `<div class="categories">${categoryChips}</div>
-                <div class="products-grid" id="productsGrid">${productsHtml}</div>`;
+        return `<div class="categories">${chips}</div><div class="products-grid">${productsHtml}</div>`;
     }
     
     function renderProfile() {
-        return `<div class="glass-card">
-            <div style="text-align:center">
-                <span style="font-size:64px;">👑</span>
-                <h2>${user.first_name}</h2>
-                <div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div>
-                <div class="stat-row"><span>📦 Заказов</span><span>${totalOrders}</span></div>
-            </div>
+        return `<div class="glass-card" style="text-align:center">
+            <span style="font-size:64px;">👑</span>
+            <h2>${user.first_name}</h2>
+            <div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div>
+            <div class="stat-row"><span>📦 Заказов</span><span>${totalOrders}</span></div>
             <button class="btn-primary" id="supportBtn">📞 Техподдержка</button>
             <button class="btn-primary" id="rulesBtn">📝 Правила</button>
         </div>`;
@@ -237,282 +218,252 @@
     }
     
     function renderFaq() {
-        return `<div class="glass-card">
-            <h3>🔍 Частые вопросы</h3>
-            <p>⚡ Мгновенная выдача</p>
-            <p>🛡 Гарантия 30 дней</p>
-            <p>💳 Оплата: карты, крипта, Stars</p>
-        </div>`;
+        return `<div class="glass-card"><h3>🔍 Частые вопросы</h3><p>⚡ Мгновенная выдача</p><p>🛡 Гарантия 30 дней</p><p>💳 Оплата: карты, крипта, Stars</p></div>`;
     }
     
-    function renderAdminPanel() {
+    // ==================== АДМИНКА ====================
+    function renderAdmin() {
         if (!isAdmin) return `<div class="glass-card">⛔ У вас нет доступа к админ-панели.</div>`;
         return `
-            <div class="admin-badge">🔐 АДМИН-ПАНЕЛЬ AURAMARKET</div>
+            <div class="admin-badge">🔐 АДМИН-ПАНЕЛЬ</div>
             <div class="glass-card">
-                <button class="btn-primary" onclick="showAddProductForm()">➕ Добавить товар</button>
-                <button class="btn-primary" onclick="showProductsList()">📋 Редактировать товары</button>
-                <button class="btn-primary" onclick="showItemsManagement()">⚙️ Управление автовыдачей</button>
-                <button class="btn-primary btn-secondary" onclick="fetchProducts()">🔄 Обновить каталог</button>
+                <button class="btn-primary" id="addProductBtn">➕ Добавить товар</button>
+                <button class="btn-primary" id="editProductsBtn">📋 Редактировать товары</button>
+                <button class="btn-primary" id="manageItemsBtn">⚙️ Управление автовыдачей</button>
+                <button class="btn-primary btn-secondary" id="refreshBtn">🔄 Обновить каталог</button>
             </div>
             <div id="adminContent"></div>
         `;
     }
     
-    window.showAddProductForm = function() {
-        const container = document.getElementById('adminContent');
-        if (!container) return;
-        container.innerHTML = `
+    function showAddForm() {
+        document.getElementById('adminContent').innerHTML = `
             <div class="glass-card">
                 <h3>➕ Новый товар</h3>
                 <input type="text" id="prodName" placeholder="Название">
                 <input type="number" id="prodPrice" placeholder="Цена">
                 <input type="text" id="prodCategory" placeholder="Категория (premium/keys/accounts/boost)">
                 <textarea id="prodDesc" placeholder="Описание"></textarea>
-                <input type="text" id="prodPhoto" placeholder="Ссылка на фото (необязательно)">
-                <button class="btn-primary" onclick="window.addProduct()">Сохранить</button>
-                <button class="btn-primary btn-secondary" onclick="window.renderAdminPanel()">Отмена</button>
+                <input type="text" id="prodPhoto" placeholder="Ссылка на фото">
+                <button class="btn-primary" id="saveProductBtn">Сохранить</button>
+                <button class="btn-primary btn-secondary" id="cancelAdminBtn">Отмена</button>
             </div>
         `;
-    };
+        document.getElementById('saveProductBtn').onclick = async () => {
+            const name = document.getElementById('prodName').value;
+            const price = parseInt(document.getElementById('prodPrice').value);
+            const category = document.getElementById('prodCategory').value;
+            const description = document.getElementById('prodDesc').value;
+            const photo_url = document.getElementById('prodPhoto').value;
+            if (!name || !price || !category) {
+                tg.showPopup({title: "Ошибка", message: "Заполните название, цену и категорию!", buttons:[{type:"ok"}]});
+                return;
+            }
+            await sendRequest('add_product', {name, price, category, description, photo_url});
+            await loadData();
+            showProductList();
+        };
+        document.getElementById('cancelAdminBtn').onclick = () => showProductList();
+    }
     
-    window.addProduct = async function() {
-        const name = document.getElementById('prodName')?.value;
-        const price = parseInt(document.getElementById('prodPrice')?.value);
-        const category = document.getElementById('prodCategory')?.value;
-        const description = document.getElementById('prodDesc')?.value;
-        const photo_url = document.getElementById('prodPhoto')?.value;
-        
-        if (!name || !price || !category) {
-            tg.showPopup({title: "Ошибка", message: "Заполните название, цену и категорию!", buttons:[{type:"ok"}]});
-            return;
-        }
-        
-        await sendRequest('add_product', {name, price, category, description, photo_url});
-        await fetchProducts();
-        window.renderAdminPanel();
-        tg.showPopup({title: "Успех", message: "Товар добавлен!", buttons:[{type:"ok"}]});
-    };
-    
-    window.showProductsList = async function() {
-        const container = document.getElementById('adminContent');
-        if (!container) return;
+    async function showProductList() {
         if (allProducts.length === 0) {
-            container.innerHTML = `<div class="glass-card">📭 Нет товаров</div>`;
+            document.getElementById('adminContent').innerHTML = `<div class="glass-card">📭 Нет товаров</div>`;
             return;
         }
         let html = `<div class="glass-card"><h3>📋 Список товаров</h3>`;
-        for (const p of allProducts) {
+        for (let p of allProducts) {
             html += `
-                <div class="product-card" style="margin: 10px 0;">
-                    <div><strong>${p.name}</strong> — ${p.price}₽ (${p.category})</div>
-                    <div>${p.description ? p.description.substring(0,50) : ''}</div>
-                    <button class="btn-primary" onclick="window.editProduct(${p.id})">✏️ Редактировать</button>
-                    <button class="btn-primary btn-danger" onclick="window.deleteProduct(${p.id})">🗑 Удалить</button>
+                <div class="product-card" style="margin:10px 0">
+                    <strong>${p.name}</strong> — ${p.price}₽ (${p.category})
+                    <button class="btn-primary" onclick="editProductById(${p.id})">✏️ Редактировать</button>
+                    <button class="btn-primary btn-danger" onclick="deleteProductById(${p.id})">🗑 Удалить</button>
                 </div>
             `;
         }
-        html += `<button class="btn-primary btn-secondary" onclick="window.renderAdminPanel()">🔙 Назад</button></div>`;
-        container.innerHTML = html;
-    };
+        html += `<button class="btn-primary btn-secondary" id="backAdminBtn">🔙 Назад</button></div>`;
+        document.getElementById('adminContent').innerHTML = html;
+        document.getElementById('backAdminBtn').onclick = () => renderAdminContent();
+    }
     
-    window.editProduct = function(id) {
-        const product = allProducts.find(p => p.id === id);
-        if (!product) return;
-        editingProductId = id;
-        const container = document.getElementById('adminContent');
-        container.innerHTML = `
+    window.editProductById = function(id) {
+        let product = allProducts.find(p => p.id === id);
+        document.getElementById('adminContent').innerHTML = `
             <div class="glass-card">
                 <h3>✏️ Редактировать: ${product.name}</h3>
-                <input type="text" id="editName" value="${product.name.replace(/"/g, '&quot;')}" placeholder="Название">
+                <input type="text" id="editName" value="${product.name}" placeholder="Название">
                 <input type="number" id="editPrice" value="${product.price}" placeholder="Цена">
                 <input type="text" id="editCategory" value="${product.category}" placeholder="Категория">
                 <textarea id="editDesc" placeholder="Описание">${product.description || ''}</textarea>
                 <input type="text" id="editPhoto" value="${product.photo_url || ''}" placeholder="Ссылка на фото">
                 <div class="stat-row"><span>Активен:</span><input type="checkbox" id="editActive" ${product.is_active ? 'checked' : ''} style="width:30px;"></div>
-                <button class="btn-primary" onclick="window.updateProduct()">Сохранить</button>
-                <button class="btn-primary btn-secondary" onclick="window.showProductsList()">Отмена</button>
+                <button class="btn-primary" id="updateProductBtn">Сохранить</button>
+                <button class="btn-primary btn-secondary" id="cancelProductBtn">Отмена</button>
             </div>
         `;
+        document.getElementById('updateProductBtn').onclick = async () => {
+            let name = document.getElementById('editName').value;
+            let price = parseInt(document.getElementById('editPrice').value);
+            let category = document.getElementById('editCategory').value;
+            let description = document.getElementById('editDesc').value;
+            let photo_url = document.getElementById('editPhoto').value;
+            let is_active = document.getElementById('editActive').checked ? 1 : 0;
+            await sendRequest('update_product', {product_id: id, name, price, category, description, photo_url, is_active});
+            await loadData();
+            showProductList();
+        };
+        document.getElementById('cancelProductBtn').onclick = () => showProductList();
     };
     
-    window.updateProduct = async function() {
-        const name = document.getElementById('editName')?.value;
-        const price = parseInt(document.getElementById('editPrice')?.value);
-        const category = document.getElementById('editCategory')?.value;
-        const description = document.getElementById('editDesc')?.value;
-        const photo_url = document.getElementById('editPhoto')?.value;
-        const is_active = document.getElementById('editActive')?.checked ? 1 : 0;
-        
-        await sendRequest('update_product', {product_id: editingProductId, name, price, category, description, photo_url, is_active});
-        await fetchProducts();
-        window.showProductsList();
-        tg.showPopup({title: "Успех", message: "Товар обновлён!", buttons:[{type:"ok"}]});
-    };
-    
-    window.deleteProduct = function(id) {
+    window.deleteProductById = function(id) {
         tg.showPopup({
             title: "Подтверждение",
-            message: "Удалить товар навсегда?",
+            message: "Удалить товар?",
             buttons: [{type:"ok", text:"✅ Да"},{type:"cancel", text:"❌ Нет"}]
         }, async (btn) => {
             if (btn === 'ok') {
                 await sendRequest('delete_product', {product_id: id});
-                await fetchProducts();
-                window.showProductsList();
-                tg.showPopup({title: "Успех", message: "Товар удалён!", buttons:[{type:"ok"}]});
+                await loadData();
+                showProductList();
             }
         });
     };
     
-    window.showItemsManagement = async function() {
+    async function showItemsManagement() {
         if (allProducts.length === 0) {
-            document.getElementById('adminContent').innerHTML = `<div class="glass-card">📭 Сначала добавьте товары</div>`;
+            document.getElementById('adminContent').innerHTML = `<div class="glass-card">📭 Нет товаров</div>`;
             return;
         }
         let html = `<div class="glass-card"><h3>⚙️ Управление автовыдачей</h3>`;
-        for (const p of allProducts) {
-            html += `<div class="product-card" style="margin: 10px 0;">
-                        <strong>${p.name}</strong>
-                        <button class="btn-primary" onclick="window.manageItems(${p.id}, '${p.name.replace(/'/g, "\\'")}')">📦 Управление аккаунтами</button>
-                    </div>`;
+        for (let p of allProducts) {
+            html += `<div class="product-card" style="margin:10px 0"><strong>${p.name}</strong><button class="btn-primary" onclick="showItemsForProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')">📦 Управление аккаунтами</button></div>`;
         }
-        html += `<button class="btn-primary btn-secondary" onclick="window.renderAdminPanel()">🔙 Назад</button></div>`;
+        html += `<button class="btn-primary btn-secondary" id="backAdminBtn2">🔙 Назад</button></div>`;
         document.getElementById('adminContent').innerHTML = html;
-    };
-    
-    window.manageItems = async function(productId, productName) {
-        currentProductId = productId;
-        currentProductName = productName;
-        const items = await sendRequest('get_items', {product_id: productId});
-        let itemsHtml = `<div class="glass-card">
-            <h3>📦 Аккаунты для: ${productName}</h3>
-            <input type="text" id="newItemData" placeholder="логин:пароль или ключ" style="width:100%;">
-            <button class="btn-primary" onclick="window.addItem()">➕ Добавить</button>
-            <hr>`;
-        if (items.items && items.items.length) {
-            for (const item of items.items) {
-                const status = item.is_sold ? '🔴 ПРОДАН' : '🟢 В НАЛИЧИИ';
-                itemsHtml += `<div class="stat-row"><span>${item.data.substring(0,40)}</span><span>${status}</span><button class="btn-primary btn-danger" onclick="window.deleteItem(${item.id})">❌</button></div>`;
-            }
-        } else {
-            itemsHtml += `<div>Нет аккаунтов</div>`;
-        }
-        itemsHtml += `<button class="btn-primary btn-secondary" onclick="window.showItemsManagement()">🔙 Назад</button></div>`;
-        document.getElementById('adminContent').innerHTML = itemsHtml;
-    };
-    
-    window.addItem = async function() {
-        const itemData = document.getElementById('newItemData')?.value;
-        if (!itemData) return;
-        await sendRequest('add_item', {product_id: currentProductId, item_data: itemData});
-        await window.manageItems(currentProductId, currentProductName);
-    };
-    
-    window.deleteItem = async function(itemId) {
-        await sendRequest('delete_item', {item_id: itemId});
-        await window.manageItems(currentProductId, currentProductName);
-    };
-    
-    window.renderAdminPanel = function() {
-        const container = document.getElementById('adminContent');
-        if (!container) return;
-        container.innerHTML = renderAdminPanelContent();
-    };
-    
-    function renderAdminPanelContent() {
-        return `
-            <div class="admin-badge">🔐 АДМИН-ПАНЕЛЬ AURAMARKET</div>
-            <div class="glass-card">
-                <button class="btn-primary" onclick="window.showAddProductForm()">➕ Добавить товар</button>
-                <button class="btn-primary" onclick="window.showProductsList()">📋 Редактировать товары</button>
-                <button class="btn-primary" onclick="window.showItemsManagement()">⚙️ Управление автовыдачей</button>
-                <button class="btn-primary btn-secondary" onclick="window.fetchProducts()">🔄 Обновить каталог</button>
-            </div>
-            <div id="adminContent"></div>
-        `;
+        document.getElementById('backAdminBtn2').onclick = () => renderAdminContent();
     }
     
+    window.showItemsForProduct = async function(productId, productName) {
+        let items = await sendRequest('get_items', {product_id: productId});
+        let html = `<div class="glass-card">
+            <h3>📦 Аккаунты для: ${productName}</h3>
+            <input type="text" id="newItem" placeholder="логин:пароль или ключ" style="width:100%;">
+            <button class="btn-primary" id="addItemBtn">➕ Добавить</button>
+            <hr>`;
+        if (items.items && items.items.length) {
+            for (let item of items.items) {
+                let status = item.is_sold ? '🔴 ПРОДАН' : '🟢 В НАЛИЧИИ';
+                html += `<div class="stat-row"><span>${item.data.substring(0,40)}</span><span>${status}</span><button class="btn-primary btn-danger" onclick="deleteItemById(${item.id}, ${productId}, '${productName.replace(/'/g, "\\'")}')">❌</button></div>`;
+            }
+        } else { html += `<div>Нет аккаунтов</div>`; }
+        html += `<button class="btn-primary btn-secondary" id="backItemsBtn">🔙 Назад</button></div>`;
+        document.getElementById('adminContent').innerHTML = html;
+        document.getElementById('addItemBtn').onclick = async () => {
+            let val = document.getElementById('newItem').value;
+            if (!val) return;
+            await sendRequest('add_item', {product_id: productId, item_data: val});
+            await showItemsForProduct(productId, productName);
+        };
+        document.getElementById('backItemsBtn').onclick = () => showItemsManagement();
+    };
+    
+    window.deleteItemById = async function(itemId, productId, productName) {
+        await sendRequest('delete_item', {item_id: itemId});
+        await showItemsForProduct(productId, productName);
+    };
+    
+    function renderAdminContent() {
+        document.getElementById('adminContent').innerHTML = `
+            <div class="admin-badge">🔐 АДМИН-ПАНЕЛЬ</div>
+            <div class="glass-card">
+                <button class="btn-primary" id="addProductBtn">➕ Добавить товар</button>
+                <button class="btn-primary" id="editProductsBtn">📋 Редактировать товары</button>
+                <button class="btn-primary" id="manageItemsBtn">⚙️ Управление автовыдачей</button>
+                <button class="btn-primary btn-secondary" id="refreshBtn">🔄 Обновить каталог</button>
+            </div>
+        `;
+        document.getElementById('addProductBtn').onclick = () => showAddForm();
+        document.getElementById('editProductsBtn').onclick = () => showProductList();
+        document.getElementById('manageItemsBtn').onclick = () => showItemsManagement();
+        document.getElementById('refreshBtn').onclick = async () => { await loadData(); renderCurrentTab(); };
+    }
+    
+    // ==================== ОБНОВЛЕНИЕ ВКЛАДОК ====================
     function renderCurrentTab() {
         const container = document.getElementById('content');
-        if(currentTab === 'catalog') container.innerHTML = renderCatalog();
-        else if(currentTab === 'profile') container.innerHTML = renderProfile();
-        else if(currentTab === 'balance') container.innerHTML = renderBalance();
-        else if(currentTab === 'cart') container.innerHTML = renderCart();
-        else if(currentTab === 'faq') container.innerHTML = renderFaq();
-        else if(currentTab === 'admin') {
-            if (!isAdmin) {
-                container.innerHTML = `<div class="glass-card">⛔ У вас нет доступа к админ-панели.</div>`;
-            } else {
-                container.innerHTML = renderAdminPanelContent();
-                // после отрисовки нужно заполнить adminContent
-                const adminContainer = document.getElementById('adminContent');
-                if (adminContainer) {
-                    adminContainer.innerHTML = '';
-                }
-            }
+        if (currentTab === 'catalog') container.innerHTML = renderCatalog();
+        else if (currentTab === 'profile') container.innerHTML = renderProfile();
+        else if (currentTab === 'balance') container.innerHTML = renderBalance();
+        else if (currentTab === 'cart') container.innerHTML = renderCart();
+        else if (currentTab === 'faq') container.innerHTML = renderFaq();
+        else if (currentTab === 'admin') {
+            container.innerHTML = renderAdmin();
+            if (isAdmin) renderAdminContent();
         }
         
-        if(currentTab === 'catalog') {
+        if (currentTab === 'catalog') {
             document.querySelectorAll('.add-to-cart').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = parseInt(btn.dataset.id);
-                    const name = btn.dataset.name;
-                    const price = parseInt(btn.dataset.price);
-                    const exist = cart.find(i => i.id === id);
-                    if(exist) exist.qty++;
+                btn.onclick = () => {
+                    let id = parseInt(btn.dataset.id);
+                    let name = btn.dataset.name;
+                    let price = parseInt(btn.dataset.price);
+                    let exist = cart.find(i => i.id === id);
+                    if (exist) exist.qty++;
                     else cart.push({id, name, price, qty: 1});
-                    tg.showPopup({title: "Добавлено", message: `${name} в корзине`, buttons: [{type:"ok"}]});
-                });
+                    tg.showPopup({title: "Добавлено", message: `${name} в корзине`, buttons:[{type:"ok"}]});
+                };
             });
             document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.addEventListener('click', () => {
+                chip.onclick = () => {
                     currentCategory = chip.dataset.cat;
                     renderCurrentTab();
-                });
+                };
             });
         }
-        if(currentTab === 'cart') {
+        if (currentTab === 'cart') {
             document.querySelectorAll('.del-cart').forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.onclick = () => {
                     cart = cart.filter(i => i.id !== parseInt(btn.dataset.id));
                     renderCurrentTab();
-                });
+                };
             });
-            document.getElementById('orderBtn')?.addEventListener('click', async () => {
-                const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
-                if(balance >= total) {
-                    const result = await sendRequest('order', {items: cart, total});
-                    if(result.success) {
+            let orderBtn = document.getElementById('orderBtn');
+            if (orderBtn) orderBtn.onclick = async () => {
+                let total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+                if (balance >= total) {
+                    let result = await sendRequest('order', {items: cart, total});
+                    if (result.success) {
                         balance = result.new_balance;
                         totalOrders++;
                         cart = [];
                         renderCurrentTab();
-                        tg.showPopup({title: "✅ Успех", message: "Заказ оформлен!", buttons: [{type:"ok"}]});
-                    } else {
-                        tg.showPopup({title: "Ошибка", message: result.error, buttons: [{type:"ok"}]});
-                    }
-                } else {
-                    tg.showPopup({title: "Ошибка", message: "Недостаточно средств", buttons: [{type:"ok"}]});
-                }
-            });
+                        tg.showPopup({title: "✅ Успех", message: "Заказ оформлен!", buttons:[{type:"ok"}]});
+                    } else tg.showPopup({title: "Ошибка", message: result.error, buttons:[{type:"ok"}]});
+                } else tg.showPopup({title: "Ошибка", message: "Недостаточно средств", buttons:[{type:"ok"}]});
+            };
         }
-        document.getElementById('supportBtn')?.addEventListener('click', () => window.open('https://t.me/MarketAura_bot?start=support'));
-        document.getElementById('rulesBtn')?.addEventListener('click', () => window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank'));
-        document.getElementById('replenishBtn')?.addEventListener('click', () => tg.showPopup({title: "Пополнение", message: "Скоро появится", buttons: [{type:"ok"}]}));
+        let supportBtn = document.getElementById('supportBtn');
+        if (supportBtn) supportBtn.onclick = () => window.open('https://t.me/MarketAura_bot?start=support');
+        let rulesBtn = document.getElementById('rulesBtn');
+        if (rulesBtn) rulesBtn.onclick = () => window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank');
+        let replenishBtn = document.getElementById('replenishBtn');
+        if (replenishBtn) replenishBtn.onclick = () => tg.showPopup({title: "Пополнение", message: "Скоро появится", buttons:[{type:"ok"}]});
     }
     
+    // ==================== НАВИГАЦИЯ ====================
     document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.onclick = () => {
             currentTab = btn.dataset.tab;
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             renderCurrentTab();
-        });
+        };
     });
     
-    fetchUserData();
-    fetchProducts();
+    (async () => {
+        await loadData();
+        renderCurrentTab();
+    })();
 </script>
 </body>
 </html>
