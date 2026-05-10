@@ -2,52 +2,218 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тест Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AuraMarket</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #0a0a0f; color: white; font-family: system-ui; padding: 20px; }
-        button { background: #b300ff; border: none; padding: 15px; margin: 10px; border-radius: 16px; color: white; font-size: 16px; cursor: pointer; }
-        input, textarea { width: 100%; padding: 10px; margin: 10px 0; background: #1a1a2e; border: 1px solid #b300ff; border-radius: 12px; color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0a0f, #030308);
+            font-family: 'Montserrat', system-ui;
+            color: white;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+        .glass-card {
+            background: rgba(20,20,40,0.65);
+            backdrop-filter: blur(16px);
+            border-radius: 32px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(179,0,255,0.35);
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #b300ff, #6a00ff);
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        .btn-danger { background: linear-gradient(90deg, #ff3b3b, #cc0000); }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #1a1a2e;
+            border: 1px solid #b300ff;
+            border-radius: 16px;
+            color: white;
+        }
+        .product-card {
+            background: rgba(25,25,50,0.7);
+            border-radius: 28px;
+            padding: 16px;
+            margin: 10px 0;
+            border: 1px solid rgba(179,0,255,0.25);
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(8,8,16,0.96);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            border-top: 1px solid #b300ff;
+        }
+        .nav-item {
+            background: transparent;
+            border: none;
+            color: #aaa;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .nav-item.active { color: #b300ff; }
+        .admin-badge { background: #b300ff; padding: 8px; border-radius: 20px; text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <h2>Тест добавления товара</h2>
-    
-    <input type="text" id="name" placeholder="Название">
-    <input type="number" id="price" placeholder="Цена">
-    <input type="text" id="category" placeholder="Категория">
-    <textarea id="desc" placeholder="Описание"></textarea>
-    
-    <button id="sendBtn">Отправить товар</button>
-    <div id="result"></div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+<div class="glass-card" style="text-align:center">
+    <div style="font-size:26px; font-weight:800;">AuraMarket</div>
+    <div style="font-size:12px; color:#b300ff;">Цифровой магазин</div>
+</div>
+
+<div id="content"></div>
+
+<div class="bottom-nav">
+    <button class="nav-item" data-tab="catalog">🛍️ Каталог</button>
+    <button class="nav-item" data-tab="admin">🔐 Админ</button>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    const user = tg.initDataUnsafe?.user || {};
+    const ADMIN_ID = 912559442;
+    let isAdmin = (user.id === ADMIN_ID);
+    
+    let allProducts = [];
+    let currentTab = 'catalog';
+    
+    async function sendRequest(action, data = {}) {
+        data.action = action;
+        console.log("📤 Отправка:", data);
+        const response = await tg.sendData(JSON.stringify(data));
+        console.log("📥 Ответ:", response);
+        try {
+            return JSON.parse(response);
+        } catch(e) {
+            console.error("Ошибка парсинга:", e);
+            return {};
+        }
+    }
+    
+    async function loadProducts() {
+        const result = await sendRequest('get_products');
+        allProducts = result.products || [];
+        console.log("Загружено товаров:", allProducts.length);
+        renderCurrentTab();
+    }
+    
+    function renderCatalog() {
+        if (allProducts.length === 0) {
+            return `<div class="glass-card">📭 В каталоге пока нет товаров</div>`;
+        }
+        return `<div class="glass-card">
+            <h3>🛍️ Каталог товаров</h3>
+            ${allProducts.map(p => `
+                <div class="product-card">
+                    <strong>${p.name}</strong> — ${p.price}₽
+                    <div style="font-size:12px; color:#b300ff;">${p.category}</div>
+                </div>
+            `).join('')}
+        </div>`;
+    }
+    
+    function renderAdmin() {
+        if (!isAdmin) return `<div class="glass-card">⛔ Нет доступа</div>`;
+        return `
+            <div class="admin-badge">🔐 АДМИН-ПАНЕЛЬ</div>
+            <div class="glass-card">
+                <h3>➕ Добавить товар</h3>
+                <input type="text" id="prodName" placeholder="Название">
+                <input type="number" id="prodPrice" placeholder="Цена">
+                <input type="text" id="prodCategory" placeholder="Категория">
+                <textarea id="prodDesc" placeholder="Описание"></textarea>
+                <button class="btn-primary" id="saveBtn">💾 Сохранить</button>
+            </div>
+            <div class="glass-card">
+                <h3>📋 Список товаров</h3>
+                <div id="productList"></div>
+            </div>
+        `;
+    }
+    
+    function showProductList() {
+        const container = document.getElementById('productList');
+        if (!container) return;
+        if (allProducts.length === 0) {
+            container.innerHTML = 'Нет товаров';
+            return;
+        }
+        container.innerHTML = allProducts.map(p => `
+            <div class="product-card">
+                <strong>${p.name}</strong> — ${p.price}₽ (${p.category})
+            </div>
+        `).join('');
+    }
+    
+    async function addProduct() {
+        const name = document.getElementById('prodName').value;
+        const price = parseInt(document.getElementById('prodPrice').value);
+        const category = document.getElementById('prodCategory').value;
+        const description = document.getElementById('prodDesc').value;
         
-        document.getElementById('sendBtn').onclick = async () => {
-            const data = {
-                action: 'add_product',
-                name: document.getElementById('name').value,
-                price: parseInt(document.getElementById('price').value),
-                category: document.getElementById('category').value,
-                description: document.getElementById('desc').value,
-                photo_url: ''
-            };
-            
-            console.log("Отправляем:", data);
-            document.getElementById('result').innerHTML = "Отправляю...";
-            
-            try {
-                const response = await tg.sendData(JSON.stringify(data));
-                console.log("Ответ:", response);
-                document.getElementById('result').innerHTML = "Ответ: " + response;
-            } catch(e) {
-                console.error("Ошибка:", e);
-                document.getElementById('result').innerHTML = "Ошибка: " + e.message;
+        if (!name || !price || !category) {
+            tg.showPopup({title: "Ошибка", message: "Заполните название, цену и категорию!", buttons:[{type:"ok"}]});
+            return;
+        }
+        
+        const result = await sendRequest('add_product', {name, price, category, description});
+        if (result.success) {
+            tg.showPopup({title: "Успех", message: "Товар добавлен!", buttons:[{type:"ok"}]});
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodPrice').value = '';
+            document.getElementById('prodCategory').value = '';
+            document.getElementById('prodDesc').value = '';
+            await loadProducts();
+            if (document.getElementById('productList')) showProductList();
+        } else {
+            tg.showPopup({title: "Ошибка", message: result.error || "Не удалось добавить", buttons:[{type:"ok"}]});
+        }
+    }
+    
+    function renderCurrentTab() {
+        const container = document.getElementById('content');
+        if (currentTab === 'catalog') {
+            container.innerHTML = renderCatalog();
+        } else if (currentTab === 'admin') {
+            container.innerHTML = renderAdmin();
+            if (isAdmin) {
+                const saveBtn = document.getElementById('saveBtn');
+                if (saveBtn) saveBtn.onclick = addProduct;
+                showProductList();
             }
+        }
+    }
+    
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.onclick = () => {
+            currentTab = btn.dataset.tab;
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCurrentTab();
         };
-    </script>
+    });
+    
+    loadProducts();
+</script>
 </body>
 </html>
