@@ -124,7 +124,7 @@
 <body>
 
 <div class="glass-card" style="text-align:center">
-    <div class="logo-3d" id="logoContainer"><span class="logo-letter">A</span><span class="logo-letter">M</span></div>
+    <div class="logo-3d"><span class="logo-letter">A</span><span class="logo-letter">M</span></div>
     <div style="font-size:26px; font-weight:800;">AuraMarket</div>
     <div style="font-size:12px; color:#b300ff;">Премиум магазин + Админ-панель</div>
 </div>
@@ -140,7 +140,6 @@
 </div>
 
 <script>
-    // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
     const tg = window.Telegram.WebApp;
     tg.expand();
     const user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
@@ -154,27 +153,35 @@
     let categories = new Set();
     let currentTab = 'catalog';
     
-    // ==================== API ====================
     async function sendRequest(action, data = {}) {
         data.action = action;
         const response = await tg.sendData(JSON.stringify(data));
-        try { return JSON.parse(response); } catch(e) { return {}; }
+        try { 
+            return JSON.parse(response); 
+        } catch(e) { 
+            console.log("Ошибка парсинга:", e);
+            return {}; 
+        }
     }
     
     async function loadData() {
-        let data = await sendRequest('get_data');
-        balance = data.balance || 0;
-        totalOrders = data.total_orders || 0;
-        pendingOrders = data.pending_orders || 0;
-        let prodData = await sendRequest('get_products');
-        allProducts = prodData.products || [];
-        categories.clear();
-        categories.add('all');
-        allProducts.forEach(p => categories.add(p.category));
-        renderCurrentTab();
+        try {
+            let data = await sendRequest('get_data');
+            balance = data.balance || 0;
+            totalOrders = data.total_orders || 0;
+            pendingOrders = data.pending_orders || 0;
+            let prodData = await sendRequest('get_products');
+            allProducts = prodData.products || [];
+            categories.clear();
+            categories.add('all');
+            allProducts.forEach(p => categories.add(p.category));
+            renderCurrentTab();
+            console.log("Загружено товаров:", allProducts.length);
+        } catch(e) {
+            console.log("Ошибка загрузки:", e);
+        }
     }
     
-    // ==================== ОТРИСОВКА ====================
     function renderCatalog() {
         let filtered = currentCategory === 'all' ? allProducts : allProducts.filter(p => p.category === currentCategory);
         let chips = Array.from(categories).map(cat => `<span class="category-chip ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'Все' : cat}</span>`).join('');
@@ -188,7 +195,15 @@
         return `<div class="categories">${chips}</div><div class="products-grid" id="productsGrid">${productsHtml}</div>`;
     }
     
-    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function escapeHtml(str) { 
+        if(!str) return '';
+        return str.replace(/[&<>]/g, function(m){
+            if(m==='&') return '&amp;';
+            if(m==='<') return '&lt;';
+            if(m==='>') return '&gt;';
+            return m;
+        });
+    }
     
     function renderProfile() {
         return `<div class="glass-card" style="text-align:center">
@@ -252,21 +267,30 @@
                 <button class="btn-primary btn-secondary" id="cancelAdminBtn">Отмена</button>
             </div>
         `;
-        document.getElementById('saveProductBtn').onclick = async function() {
-            const name = document.getElementById('prodName').value;
-            const price = parseInt(document.getElementById('prodPrice').value);
-            const category = document.getElementById('prodCategory').value;
-            const description = document.getElementById('prodDesc').value;
-            const photo_url = document.getElementById('prodPhoto').value;
-            if (!name || !price || !category) {
-                tg.showPopup({title: "Ошибка", message: "Заполните название, цену и категорию!", buttons:[{type:"ok"}]});
-                return;
-            }
-            await sendRequest('add_product', {name, price, category, description, photo_url});
-            await loadData();
-            showProductList();
-        };
-        document.getElementById('cancelAdminBtn').onclick = function() { renderAdminContent(); };
+        const saveBtn = document.getElementById('saveProductBtn');
+        if(saveBtn) {
+            saveBtn.onclick = async function() {
+                const name = document.getElementById('prodName').value;
+                const price = parseInt(document.getElementById('prodPrice').value);
+                const category = document.getElementById('prodCategory').value;
+                const description = document.getElementById('prodDesc').value;
+                const photo_url = document.getElementById('prodPhoto').value;
+                if (!name || !price || !category) {
+                    tg.showPopup({title: "Ошибка", message: "Заполните название, цену и категорию!", buttons:[{type:"ok"}]});
+                    return;
+                }
+                const result = await sendRequest('add_product', {name, price, category, description, photo_url});
+                if(result.success) {
+                    tg.showPopup({title: "Успех", message: "Товар добавлен!", buttons:[{type:"ok"}]});
+                    await loadData();
+                    showProductList();
+                } else {
+                    tg.showPopup({title: "Ошибка", message: "Не удалось добавить товар", buttons:[{type:"ok"}]});
+                }
+            };
+        }
+        const cancelBtn = document.getElementById('cancelAdminBtn');
+        if(cancelBtn) cancelBtn.onclick = () => renderAdminContent();
     }
     
     async function showProductList() {
@@ -293,11 +317,13 @@
         document.querySelectorAll('.delete-product').forEach(btn => {
             btn.onclick = () => deleteProductById(parseInt(btn.dataset.id));
         });
-        document.getElementById('backAdminBtn').onclick = () => renderAdminContent();
+        const backBtn = document.getElementById('backAdminBtn');
+        if(backBtn) backBtn.onclick = () => renderAdminContent();
     }
     
     async function editProductById(id) {
         let product = allProducts.find(p => p.id === id);
+        if(!product) return;
         document.getElementById('adminContent').innerHTML = `
             <div class="glass-card">
                 <h3>✏️ Редактировать: ${escapeHtml(product.name)}</h3>
@@ -311,18 +337,22 @@
                 <button class="btn-primary btn-secondary" id="cancelProductBtn">Отмена</button>
             </div>
         `;
-        document.getElementById('updateProductBtn').onclick = async () => {
-            let name = document.getElementById('editName').value;
-            let price = parseInt(document.getElementById('editPrice').value);
-            let category = document.getElementById('editCategory').value;
-            let description = document.getElementById('editDesc').value;
-            let photo_url = document.getElementById('editPhoto').value;
-            let is_active = document.getElementById('editActive').checked ? 1 : 0;
-            await sendRequest('update_product', {product_id: id, name, price, category, description, photo_url, is_active});
-            await loadData();
-            showProductList();
-        };
-        document.getElementById('cancelProductBtn').onclick = () => showProductList();
+        const updateBtn = document.getElementById('updateProductBtn');
+        if(updateBtn) {
+            updateBtn.onclick = async () => {
+                let name = document.getElementById('editName').value;
+                let price = parseInt(document.getElementById('editPrice').value);
+                let category = document.getElementById('editCategory').value;
+                let description = document.getElementById('editDesc').value;
+                let photo_url = document.getElementById('editPhoto').value;
+                let is_active = document.getElementById('editActive').checked ? 1 : 0;
+                await sendRequest('update_product', {product_id: id, name, price, category, description, photo_url, is_active});
+                await loadData();
+                showProductList();
+            };
+        }
+        const cancelBtn = document.getElementById('cancelProductBtn');
+        if(cancelBtn) cancelBtn.onclick = () => showProductList();
     }
     
     async function deleteProductById(id) {
@@ -354,7 +384,8 @@
         document.querySelectorAll('.manage-items').forEach(btn => {
             btn.onclick = () => showItemsForProduct(parseInt(btn.dataset.id), btn.dataset.name);
         });
-        document.getElementById('backAdminBtn2').onclick = () => renderAdminContent();
+        const backBtn = document.getElementById('backAdminBtn2');
+        if(backBtn) backBtn.onclick = () => renderAdminContent();
     }
     
     async function showItemsForProduct(productId, productName) {
@@ -373,19 +404,23 @@
         html += `<button class="btn-primary btn-secondary" id="backItemsBtn">🔙 Назад</button></div>`;
         document.getElementById('adminContent').innerHTML = html;
         
-        document.getElementById('addItemBtn').onclick = async () => {
-            let val = document.getElementById('newItem').value;
-            if (!val) return;
-            await sendRequest('add_item', {product_id: productId, item_data: val});
-            await showItemsForProduct(productId, productName);
-        };
+        const addBtn = document.getElementById('addItemBtn');
+        if(addBtn) {
+            addBtn.onclick = async () => {
+                let val = document.getElementById('newItem').value;
+                if (!val) return;
+                await sendRequest('add_item', {product_id: productId, item_data: val});
+                await showItemsForProduct(productId, productName);
+            };
+        }
         document.querySelectorAll('.delete-item').forEach(btn => {
             btn.onclick = async () => {
                 await sendRequest('delete_item', {item_id: parseInt(btn.dataset.id)});
                 await showItemsForProduct(productId, productName);
             };
         });
-        document.getElementById('backItemsBtn').onclick = () => showItemsManagement();
+        const backBtn = document.getElementById('backItemsBtn');
+        if(backBtn) backBtn.onclick = () => showItemsManagement();
     }
     
     function renderAdminContent() {
@@ -398,13 +433,16 @@
                 <button class="btn-primary btn-secondary" id="refreshBtn">🔄 Обновить каталог</button>
             </div>
         `;
-        document.getElementById('addProductBtn').onclick = () => showAddForm();
-        document.getElementById('editProductsBtn').onclick = () => showProductList();
-        document.getElementById('manageItemsBtn').onclick = () => showItemsManagement();
-        document.getElementById('refreshBtn').onclick = async () => { await loadData(); renderCurrentTab(); };
+        const addBtn = document.getElementById('addProductBtn');
+        if(addBtn) addBtn.onclick = () => showAddForm();
+        const editBtn = document.getElementById('editProductsBtn');
+        if(editBtn) editBtn.onclick = () => showProductList();
+        const manageBtn = document.getElementById('manageItemsBtn');
+        if(manageBtn) manageBtn.onclick = () => showItemsManagement();
+        const refreshBtn = document.getElementById('refreshBtn');
+        if(refreshBtn) refreshBtn.onclick = async () => { await loadData(); renderCurrentTab(); };
     }
     
-    // ==================== ОБНОВЛЕНИЕ ВКЛАДОК ====================
     function renderCurrentTab() {
         const container = document.getElementById('content');
         if (currentTab === 'catalog') container.innerHTML = renderCatalog();
@@ -466,7 +504,6 @@
         if (replenishBtn) replenishBtn.onclick = () => tg.showPopup({title: "Пополнение", message: "Скоро появится", buttons:[{type:"ok"}]});
     }
     
-    // ==================== НАВИГАЦИЯ ====================
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.onclick = () => {
             currentTab = btn.dataset.tab;
