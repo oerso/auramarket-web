@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>AuraMarket | Mini App</title>
+    <title>AuraMarket | Админ-панель</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,7 +12,7 @@
             font-family: 'Montserrat', system-ui;
             color: white;
             min-height: 100vh;
-            padding-bottom: 85px;
+            padding-bottom: 20px;
         }
         .glass-card {
             background: rgba(20,20,40,0.65);
@@ -31,6 +31,13 @@
             font-weight: bold;
             color: white;
             cursor: pointer;
+            margin: 5px 0;
+        }
+        .btn-danger {
+            background: linear-gradient(90deg, #ff3b3b, #cc0000);
+        }
+        .btn-secondary {
+            background: #2a2a3a;
         }
         .products-grid {
             display: grid;
@@ -93,6 +100,25 @@
         }
         .category-chip.active { background: #b300ff; color: white; }
         .categories { text-align: center; margin: 10px 0; }
+        .admin-badge {
+            background: #b300ff;
+            color: white;
+            padding: 8px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #1a1a2e;
+            border: 1px solid #b300ff;
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -100,7 +126,7 @@
 <div class="glass-card" style="text-align:center">
     <div class="logo-3d"><span class="logo-letter">A</span><span class="logo-letter">M</span></div>
     <div style="font-size:26px; font-weight:800;">AuraMarket</div>
-    <div style="font-size:12px; color:#b300ff;">Премиум магазин</div>
+    <div style="font-size:12px; color:#b300ff;">Премиум магазин + Админ-панель</div>
 </div>
 
 <div id="content"></div>
@@ -110,58 +136,65 @@
     <button class="nav-item" data-tab="balance"><span>💵</span><span>Баланс</span></button>
     <button class="nav-item" data-tab="cart"><span>🛒</span><span>Корзина</span></button>
     <button class="nav-item" data-tab="faq"><span>❓</span><span>FAQ</span></button>
+    <button class="nav-item" data-tab="admin"><span>🔐</span><span>Админ</span></button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
     const user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
-
+    
+    // ТВОЙ ID ДЛЯ АДМИНКИ (ЗАМЕНИ НА СВОЙ)
+    const ADMIN_ID = 912559442;
+    let isAdmin = (user.id === ADMIN_ID);
+    
     let balance = 0, totalOrders = 0, pendingOrders = 0;
     let cart = [];
     let currentTab = 'catalog';
     let allProducts = [];
     let currentCategory = 'all';
     let categories = new Set();
-
+    
+    let editingProductId = null;
+    
+    // ==================== API ЗАПРОСЫ ====================
+    async function sendRequest(action, data = {}) {
+        data.action = action;
+        const response = await tg.sendData(JSON.stringify(data));
+        return JSON.parse(response);
+    }
+    
     async function fetchUserData() {
         try {
-            const response = await tg.sendData(JSON.stringify({ action: 'get_data' }));
-            if (response) {
-                const data = JSON.parse(response);
-                balance = data.balance || 0;
-                totalOrders = data.total_orders || 0;
-                pendingOrders = data.pending_orders || 0;
-            }
+            const data = await sendRequest('get_data');
+            balance = data.balance || 0;
+            totalOrders = data.total_orders || 0;
+            pendingOrders = data.pending_orders || 0;
         } catch(e) { console.log(e); }
     }
-
+    
     async function fetchProducts() {
         try {
-            const response = await tg.sendData(JSON.stringify({ action: 'get_products' }));
-            if (response) {
-                const data = JSON.parse(response);
-                if (data.products) {
-                    allProducts = data.products;
-                    categories.clear();
-                    categories.add('all');
-                    allProducts.forEach(p => categories.add(p.category));
-                    renderCurrentTab();
-                }
+            const data = await sendRequest('get_products');
+            if (data.products) {
+                allProducts = data.products;
+                categories.clear();
+                categories.add('all');
+                allProducts.forEach(p => categories.add(p.category));
+                renderCurrentTab();
             }
         } catch(e) { console.log(e); }
     }
-
+    
+    // ==================== ОБЫЧНЫЙ КАТАЛОГ ====================
     function renderCatalog() {
         let filtered = allProducts;
         if (currentCategory !== 'all') {
             filtered = allProducts.filter(p => p.category === currentCategory);
         }
-        
         const categoryChips = Array.from(categories).map(cat => 
             `<span class="category-chip ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'Все' : cat}</span>`
         ).join('');
-        
         const productsHtml = filtered.map(p => `
             <div class="product-card">
                 <h3>${p.name}</h3>
@@ -169,11 +202,185 @@
                 <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">В корзину</button>
             </div>
         `).join('');
-        
         return `<div class="categories">${categoryChips}</div>
                 <div class="products-grid" id="productsGrid">${productsHtml}</div>`;
     }
-
+    
+    // ==================== АДМИН-ПАНЕЛЬ ====================
+    function renderAdminPanel() {
+        if (!isAdmin) return `<div class="glass-card">⛔ У вас нет доступа к админ-панели.</div>`;
+        
+        return `
+            <div class="admin-badge">🔐 АДМИН-ПАНЕЛЬ AURAMARKET</div>
+            <div class="glass-card">
+                <button class="btn-primary" onclick="showAddProductForm()">➕ Добавить товар</button>
+                <button class="btn-primary" onclick="showProductsList()">📋 Редактировать товары</button>
+                <button class="btn-primary" onclick="showItemsManagement()">⚙️ Управление автовыдачей</button>
+                <button class="btn-primary btn-secondary" onclick="fetchProducts()">🔄 Обновить каталог</button>
+            </div>
+            <div id="adminContent"></div>
+        `;
+    }
+    
+    function showAddProductForm() {
+        const container = document.getElementById('adminContent');
+        container.innerHTML = `
+            <div class="glass-card">
+                <h3>➕ Новый товар</h3>
+                <input type="text" id="prodName" placeholder="Название">
+                <input type="number" id="prodPrice" placeholder="Цена">
+                <input type="text" id="prodCategory" placeholder="Категория (premium/keys/accounts/boost)">
+                <textarea id="prodDesc" placeholder="Описание"></textarea>
+                <input type="text" id="prodPhoto" placeholder="Ссылка на фото (необязательно)">
+                <button class="btn-primary" onclick="addProduct()">Сохранить</button>
+                <button class="btn-primary btn-secondary" onclick="renderAdminPanel()">Отмена</button>
+            </div>
+        `;
+    }
+    
+    async function addProduct() {
+        const name = document.getElementById('prodName').value;
+        const price = parseInt(document.getElementById('prodPrice').value);
+        const category = document.getElementById('prodCategory').value;
+        const description = document.getElementById('prodDesc').value;
+        const photo_url = document.getElementById('prodPhoto').value;
+        
+        if (!name || !price || !category) {
+            tg.showPopup({title: "Ошибка", message: "Заполните все поля!", buttons: [{type:"ok"}]});
+            return;
+        }
+        
+        await sendRequest('add_product', {name, price, category, description, photo_url});
+        await fetchProducts();
+        renderAdminPanel();
+        tg.showPopup({title: "Успех", message: "Товар добавлен!", buttons: [{type:"ok"}]});
+    }
+    
+    async function showProductsList() {
+        const container = document.getElementById('adminContent');
+        if (allProducts.length === 0) {
+            container.innerHTML = `<div class="glass-card">📭 Нет товаров</div>`;
+            return;
+        }
+        let html = `<div class="glass-card"><h3>📋 Список товаров</h3>`;
+        for (const p of allProducts) {
+            html += `
+                <div class="product-card" style="margin: 10px 0;">
+                    <div><strong>${p.name}</strong> — ${p.price}₽ (${p.category})</div>
+                    <div>${p.description.substring(0, 50)}</div>
+                    <button class="btn-primary" onclick="editProduct(${p.id})">✏️ Редактировать</button>
+                    <button class="btn-danger" onclick="deleteProduct(${p.id})">🗑 Удалить</button>
+                </div>
+            `;
+        }
+        html += `<button class="btn-primary btn-secondary" onclick="renderAdminPanel()">🔙 Назад</button></div>`;
+        container.innerHTML = html;
+    }
+    
+    function editProduct(id) {
+        const product = allProducts.find(p => p.id === id);
+        if (!product) return;
+        editingProductId = id;
+        const container = document.getElementById('adminContent');
+        container.innerHTML = `
+            <div class="glass-card">
+                <h3>✏️ Редактировать: ${product.name}</h3>
+                <input type="text" id="editName" value="${product.name}" placeholder="Название">
+                <input type="number" id="editPrice" value="${product.price}" placeholder="Цена">
+                <input type="text" id="editCategory" value="${product.category}" placeholder="Категория">
+                <textarea id="editDesc" placeholder="Описание">${product.description || ''}</textarea>
+                <input type="text" id="editPhoto" value="${product.photo_url || ''}" placeholder="Ссылка на фото">
+                <div class="stat-row"><span>Активен:</span><input type="checkbox" id="editActive" ${product.is_active ? 'checked' : ''} style="width:30px;"></div>
+                <button class="btn-primary" onclick="updateProduct()">Сохранить</button>
+                <button class="btn-primary btn-secondary" onclick="showProductsList()">Отмена</button>
+            </div>
+        `;
+    }
+    
+    async function updateProduct() {
+        const name = document.getElementById('editName').value;
+        const price = parseInt(document.getElementById('editPrice').value);
+        const category = document.getElementById('editCategory').value;
+        const description = document.getElementById('editDesc').value;
+        const photo_url = document.getElementById('editPhoto').value;
+        const is_active = document.getElementById('editActive').checked ? 1 : 0;
+        
+        await sendRequest('update_product', {product_id: editingProductId, name, price, category, description, photo_url, is_active});
+        await fetchProducts();
+        showProductsList();
+        tg.showPopup({title: "Успех", message: "Товар обновлён!", buttons: [{type:"ok"}]});
+    }
+    
+    async function deleteProduct(id) {
+        tg.showPopup({
+            title: "Подтверждение",
+            message: "Удалить товар навсегда?",
+            buttons: [{type:"ok", text:"✅ Да"},{type:"cancel", text:"❌ Нет"}]
+        }, async (btn) => {
+            if (btn === 'ok') {
+                await sendRequest('delete_product', {product_id: id});
+                await fetchProducts();
+                showProductsList();
+                tg.showPopup({title: "Успех", message: "Товар удалён!", buttons: [{type:"ok"}]});
+            }
+        });
+    }
+    
+    async function showItemsManagement() {
+        if (allProducts.length === 0) {
+            document.getElementById('adminContent').innerHTML = `<div class="glass-card">📭 Сначала добавьте товары</div>`;
+            return;
+        }
+        let html = `<div class="glass-card"><h3>⚙️ Управление автовыдачей</h3>`;
+        for (const p of allProducts) {
+            html += `<div class="product-card" style="margin: 10px 0;">
+                        <strong>${p.name}</strong>
+                        <button class="btn-primary" onclick="manageItems(${p.id}, '${p.name.replace(/'/g, "\\'")}')">📦 Управление аккаунтами</button>
+                    </div>`;
+        }
+        html += `<button class="btn-primary btn-secondary" onclick="renderAdminPanel()">🔙 Назад</button></div>`;
+        document.getElementById('adminContent').innerHTML = html;
+    }
+    
+    let currentProductId = null;
+    let currentProductName = null;
+    
+    async function manageItems(productId, productName) {
+        currentProductId = productId;
+        currentProductName = productName;
+        const items = await sendRequest('get_items', {product_id: productId});
+        let itemsHtml = `<div class="glass-card">
+            <h3>📦 Аккаунты для: ${productName}</h3>
+            <input type="text" id="newItemData" placeholder="логин:пароль или ключ" style="width:100%;">
+            <button class="btn-primary" onclick="addItem()">➕ Добавить</button>
+            <hr>`;
+        for (const item of items.items) {
+            const status = item.is_sold ? '🔴 ПРОДАН' : '🟢 В НАЛИЧИИ';
+            itemsHtml += `
+                <div class="stat-row">
+                    <span>${item.data.substring(0, 40)}</span>
+                    <span>${status}</span>
+                    <button class="btn-danger" onclick="deleteItem(${item.id})">❌</button>
+                </div>
+            `;
+        }
+        itemsHtml += `<button class="btn-primary btn-secondary" onclick="showItemsManagement()">🔙 Назад</button></div>`;
+        document.getElementById('adminContent').innerHTML = itemsHtml;
+    }
+    
+    async function addItem() {
+        const itemData = document.getElementById('newItemData').value;
+        if (!itemData) return;
+        await sendRequest('add_item', {product_id: currentProductId, item_data: itemData});
+        await manageItems(currentProductId, currentProductName);
+    }
+    
+    async function deleteItem(itemId) {
+        await sendRequest('delete_item', {item_id: itemId});
+        await manageItems(currentProductId, currentProductName);
+    }
+    
+    // ==================== ОСТАЛЬНОЙ ФУНКЦИОНАЛ ====================
     function renderProfile() {
         return `<div class="glass-card">
             <div style="text-align:center">
@@ -186,7 +393,7 @@
             <button class="btn-primary" id="rulesBtn">📝 Правила</button>
         </div>`;
     }
-
+    
     function renderBalance() {
         return `<div class="glass-card">
             <div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div>
@@ -195,7 +402,7 @@
             <button class="btn-primary" id="replenishBtn">💸 Пополнить баланс</button>
         </div>`;
     }
-
+    
     function renderCart() {
         if(cart.length === 0) return `<div class="glass-card" style="text-align:center">🛒 Корзина пуста</div>`;
         let total = cart.reduce((s,i) => s + i.price * i.qty, 0);
@@ -205,7 +412,7 @@
             <button class="btn-primary" id="orderBtn">Оформить заказ</button>
         </div>`;
     }
-
+    
     function renderFaq() {
         return `<div class="glass-card">
             <h3>🔍 Частые вопросы</h3>
@@ -214,7 +421,7 @@
             <p>💳 Оплата: карты, крипта, Stars</p>
         </div>`;
     }
-
+    
     function renderCurrentTab() {
         const container = document.getElementById('content');
         if(currentTab === 'catalog') container.innerHTML = renderCatalog();
@@ -222,7 +429,8 @@
         else if(currentTab === 'balance') container.innerHTML = renderBalance();
         else if(currentTab === 'cart') container.innerHTML = renderCart();
         else if(currentTab === 'faq') container.innerHTML = renderFaq();
-
+        else if(currentTab === 'admin') container.innerHTML = renderAdminPanel();
+        
         if(currentTab === 'catalog') {
             document.querySelectorAll('.add-to-cart').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -252,8 +460,7 @@
             document.getElementById('orderBtn')?.addEventListener('click', async () => {
                 const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
                 if(balance >= total) {
-                    const response = await tg.sendData(JSON.stringify({action: 'order', items: cart, total: total}));
-                    const result = JSON.parse(response);
+                    const result = await sendRequest('order', {items: cart, total});
                     if(result.success) {
                         balance = result.new_balance;
                         totalOrders++;
@@ -271,8 +478,12 @@
         document.getElementById('supportBtn')?.addEventListener('click', () => window.open('https://t.me/MarketAura_bot?start=support'));
         document.getElementById('rulesBtn')?.addEventListener('click', () => window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank'));
         document.getElementById('replenishBtn')?.addEventListener('click', () => tg.showPopup({title: "Пополнение", message: "Скоро появится", buttons: [{type:"ok"}]}));
+        
+        if(currentTab === 'admin' && isAdmin && document.getElementById('adminContent')) {
+            // контент уже отрисован через renderAdminPanel и функции
+        }
     }
-
+    
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.addEventListener('click', () => {
             currentTab = btn.dataset.tab;
