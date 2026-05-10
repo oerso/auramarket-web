@@ -124,7 +124,7 @@
 <body>
 
 <div class="glass-card" style="text-align:center">
-    <div class="logo-3d"><span class="logo-letter">A</span><span class="logo-letter">M</span></div>
+    <div class="logo-3d" id="logoContainer"><span class="logo-letter">A</span><span class="logo-letter">M</span></div>
     <div style="font-size:26px; font-weight:800;">AuraMarket</div>
     <div style="font-size:12px; color:#b300ff;">Премиум магазин + Админ-панель</div>
 </div>
@@ -171,6 +171,7 @@
         categories.clear();
         categories.add('all');
         allProducts.forEach(p => categories.add(p.category));
+        renderCurrentTab();
     }
     
     // ==================== ОТРИСОВКА ====================
@@ -179,18 +180,20 @@
         let chips = Array.from(categories).map(cat => `<span class="category-chip ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'Все' : cat}</span>`).join('');
         let productsHtml = filtered.map(p => `
             <div class="product-card">
-                <h3>${p.name}</h3>
+                <h3>${escapeHtml(p.name)}</h3>
                 <div class="stat-row"><span>💰 Цена</span><span>${p.price} ₽</span></div>
-                <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">В корзину</button>
+                <button class="add-to-cart" data-id="${p.id}" data-name="${escapeHtml(p.name)}" data-price="${p.price}">В корзину</button>
             </div>
         `).join('');
-        return `<div class="categories">${chips}</div><div class="products-grid">${productsHtml}</div>`;
+        return `<div class="categories">${chips}</div><div class="products-grid" id="productsGrid">${productsHtml}</div>`;
     }
+    
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
     
     function renderProfile() {
         return `<div class="glass-card" style="text-align:center">
             <span style="font-size:64px;">👑</span>
-            <h2>${user.first_name}</h2>
+            <h2>${escapeHtml(user.first_name)}</h2>
             <div class="stat-row"><span>💰 Баланс</span><span>${balance} ₽</span></div>
             <div class="stat-row"><span>📦 Заказов</span><span>${totalOrders}</span></div>
             <button class="btn-primary" id="supportBtn">📞 Техподдержка</button>
@@ -211,7 +214,7 @@
         if(cart.length === 0) return `<div class="glass-card" style="text-align:center">🛒 Корзина пуста</div>`;
         let total = cart.reduce((s,i) => s + i.price * i.qty, 0);
         return `<div class="glass-card">
-            ${cart.map(i => `<div class="stat-row"><span>${i.name} x${i.qty}</span><span>${i.price * i.qty} ₽</span><button class="del-cart" data-id="${i.id}">❌</button></div>`).join('')}
+            ${cart.map(i => `<div class="stat-row"><span>${escapeHtml(i.name)} x${i.qty}</span><span>${i.price * i.qty} ₽</span><button class="del-cart" data-id="${i.id}">❌</button></div>`).join('')}
             <div class="stat-row"><strong>Итого</strong><strong>${total} ₽</strong></div>
             <button class="btn-primary" id="orderBtn">Оформить заказ</button>
         </div>`;
@@ -249,7 +252,7 @@
                 <button class="btn-primary btn-secondary" id="cancelAdminBtn">Отмена</button>
             </div>
         `;
-        document.getElementById('saveProductBtn').onclick = async () => {
+        document.getElementById('saveProductBtn').onclick = async function() {
             const name = document.getElementById('prodName').value;
             const price = parseInt(document.getElementById('prodPrice').value);
             const category = document.getElementById('prodCategory').value;
@@ -263,7 +266,7 @@
             await loadData();
             showProductList();
         };
-        document.getElementById('cancelAdminBtn').onclick = () => showProductList();
+        document.getElementById('cancelAdminBtn').onclick = function() { renderAdminContent(); };
     }
     
     async function showProductList() {
@@ -275,25 +278,32 @@
         for (let p of allProducts) {
             html += `
                 <div class="product-card" style="margin:10px 0">
-                    <strong>${p.name}</strong> — ${p.price}₽ (${p.category})
-                    <button class="btn-primary" onclick="editProductById(${p.id})">✏️ Редактировать</button>
-                    <button class="btn-primary btn-danger" onclick="deleteProductById(${p.id})">🗑 Удалить</button>
+                    <strong>${escapeHtml(p.name)}</strong> — ${p.price}₽ (${escapeHtml(p.category)})
+                    <button class="btn-primary edit-product" data-id="${p.id}">✏️ Редактировать</button>
+                    <button class="btn-primary btn-danger delete-product" data-id="${p.id}">🗑 Удалить</button>
                 </div>
             `;
         }
         html += `<button class="btn-primary btn-secondary" id="backAdminBtn">🔙 Назад</button></div>`;
         document.getElementById('adminContent').innerHTML = html;
+        
+        document.querySelectorAll('.edit-product').forEach(btn => {
+            btn.onclick = () => editProductById(parseInt(btn.dataset.id));
+        });
+        document.querySelectorAll('.delete-product').forEach(btn => {
+            btn.onclick = () => deleteProductById(parseInt(btn.dataset.id));
+        });
         document.getElementById('backAdminBtn').onclick = () => renderAdminContent();
     }
     
-    window.editProductById = function(id) {
+    async function editProductById(id) {
         let product = allProducts.find(p => p.id === id);
         document.getElementById('adminContent').innerHTML = `
             <div class="glass-card">
-                <h3>✏️ Редактировать: ${product.name}</h3>
-                <input type="text" id="editName" value="${product.name}" placeholder="Название">
+                <h3>✏️ Редактировать: ${escapeHtml(product.name)}</h3>
+                <input type="text" id="editName" value="${escapeHtml(product.name)}" placeholder="Название">
                 <input type="number" id="editPrice" value="${product.price}" placeholder="Цена">
-                <input type="text" id="editCategory" value="${product.category}" placeholder="Категория">
+                <input type="text" id="editCategory" value="${escapeHtml(product.category)}" placeholder="Категория">
                 <textarea id="editDesc" placeholder="Описание">${product.description || ''}</textarea>
                 <input type="text" id="editPhoto" value="${product.photo_url || ''}" placeholder="Ссылка на фото">
                 <div class="stat-row"><span>Активен:</span><input type="checkbox" id="editActive" ${product.is_active ? 'checked' : ''} style="width:30px;"></div>
@@ -313,9 +323,9 @@
             showProductList();
         };
         document.getElementById('cancelProductBtn').onclick = () => showProductList();
-    };
+    }
     
-    window.deleteProductById = function(id) {
+    async function deleteProductById(id) {
         tg.showPopup({
             title: "Подтверждение",
             message: "Удалить товар?",
@@ -327,7 +337,7 @@
                 showProductList();
             }
         });
-    };
+    }
     
     async function showItemsManagement() {
         if (allProducts.length === 0) {
@@ -336,41 +346,47 @@
         }
         let html = `<div class="glass-card"><h3>⚙️ Управление автовыдачей</h3>`;
         for (let p of allProducts) {
-            html += `<div class="product-card" style="margin:10px 0"><strong>${p.name}</strong><button class="btn-primary" onclick="showItemsForProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')">📦 Управление аккаунтами</button></div>`;
+            html += `<div class="product-card" style="margin:10px 0"><strong>${escapeHtml(p.name)}</strong><button class="btn-primary manage-items" data-id="${p.id}" data-name="${escapeHtml(p.name).replace(/'/g, "\\'")}">📦 Управление аккаунтами</button></div>`;
         }
         html += `<button class="btn-primary btn-secondary" id="backAdminBtn2">🔙 Назад</button></div>`;
         document.getElementById('adminContent').innerHTML = html;
+        
+        document.querySelectorAll('.manage-items').forEach(btn => {
+            btn.onclick = () => showItemsForProduct(parseInt(btn.dataset.id), btn.dataset.name);
+        });
         document.getElementById('backAdminBtn2').onclick = () => renderAdminContent();
     }
     
-    window.showItemsForProduct = async function(productId, productName) {
+    async function showItemsForProduct(productId, productName) {
         let items = await sendRequest('get_items', {product_id: productId});
         let html = `<div class="glass-card">
-            <h3>📦 Аккаунты для: ${productName}</h3>
+            <h3>📦 Аккаунты для: ${escapeHtml(productName)}</h3>
             <input type="text" id="newItem" placeholder="логин:пароль или ключ" style="width:100%;">
             <button class="btn-primary" id="addItemBtn">➕ Добавить</button>
             <hr>`;
         if (items.items && items.items.length) {
             for (let item of items.items) {
                 let status = item.is_sold ? '🔴 ПРОДАН' : '🟢 В НАЛИЧИИ';
-                html += `<div class="stat-row"><span>${item.data.substring(0,40)}</span><span>${status}</span><button class="btn-primary btn-danger" onclick="deleteItemById(${item.id}, ${productId}, '${productName.replace(/'/g, "\\'")}')">❌</button></div>`;
+                html += `<div class="stat-row"><span>${escapeHtml(item.data.substring(0,40))}</span><span>${status}</span><button class="btn-primary btn-danger delete-item" data-id="${item.id}">❌</button></div>`;
             }
         } else { html += `<div>Нет аккаунтов</div>`; }
         html += `<button class="btn-primary btn-secondary" id="backItemsBtn">🔙 Назад</button></div>`;
         document.getElementById('adminContent').innerHTML = html;
+        
         document.getElementById('addItemBtn').onclick = async () => {
             let val = document.getElementById('newItem').value;
             if (!val) return;
             await sendRequest('add_item', {product_id: productId, item_data: val});
             await showItemsForProduct(productId, productName);
         };
+        document.querySelectorAll('.delete-item').forEach(btn => {
+            btn.onclick = async () => {
+                await sendRequest('delete_item', {item_id: parseInt(btn.dataset.id)});
+                await showItemsForProduct(productId, productName);
+            };
+        });
         document.getElementById('backItemsBtn').onclick = () => showItemsManagement();
-    };
-    
-    window.deleteItemById = async function(itemId, productId, productName) {
-        await sendRequest('delete_item', {item_id: itemId});
-        await showItemsForProduct(productId, productName);
-    };
+    }
     
     function renderAdminContent() {
         document.getElementById('adminContent').innerHTML = `
@@ -460,10 +476,7 @@
         };
     });
     
-    (async () => {
-        await loadData();
-        renderCurrentTab();
-    })();
+    loadData();
 </script>
 </body>
 </html>
