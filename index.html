@@ -3,195 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>AuraMarket | Тест</title>
+    <title>AuraMarket | Каталог</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #0a0a0f;
-            font-family: system-ui;
+            background: radial-gradient(circle at 20% 30%, #0a0a0f, #030308);
+            font-family: 'Montserrat', system-ui;
             color: white;
             padding: 20px;
+            padding-bottom: 80px;
         }
         .card {
-            background: #1a1a2e;
-            border-radius: 20px;
+            background: rgba(20,20,40,0.65);
+            backdrop-filter: blur(16px);
+            border-radius: 28px;
             padding: 20px;
-            margin: 10px 0;
-            border: 1px solid #b300ff;
+            margin: 12px 0;
+            border: 1px solid rgba(179,0,255,0.35);
         }
-        button {
-            background: #b300ff;
+        .btn-primary {
+            background: linear-gradient(90deg, #b300ff, #6a00ff);
             border: none;
-            padding: 12px;
-            border-radius: 16px;
-            color: white;
-            font-size: 16px;
             width: 100%;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
             cursor: pointer;
-            margin: 5px 0;
+            margin-top: 10px;
         }
-        .hidden { display: none; }
-        .flex { display: flex; gap: 10px; justify-content: space-around; margin: 20px 0; }
-        .nav-btn { background: #2a2a3a; padding: 8px; }
-        .nav-btn.active { background: #b300ff; }
+        .price {
+            color: #b300ff;
+            font-size: 20px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-
-<div class="flex">
-    <button class="nav-btn" data-tab="catalog">🛍️ Каталог</button>
-    <button class="nav-btn" data-tab="profile">👤 Профиль</button>
-    <button class="nav-btn" data-tab="cart">🛒 Корзина</button>
-</div>
-
-<div id="catalogSection">
-    <div id="productsList">Загрузка товаров...</div>
-</div>
-
-<div id="profileSection" class="hidden">
-    <div class="card" id="profileInfo">Загрузка профиля...</div>
-</div>
-
-<div id="cartSection" class="hidden">
-    <div class="card" id="cartList">Корзина пуста</div>
-    <button id="orderBtn" class="hidden">Оформить заказ</button>
-</div>
-
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:28px; font-weight:800;">AuraMarket</div>
+        <div style="font-size:12px; color:#b300ff;">Каталог товаров</div>
+    </div>
     
-    let balance = 0;
-    let cart = [];
-    let allProducts = [];
-    let currentTab = 'catalog';
-    
-    async function sendRequest(action, data = {}) {
-        data.action = action;
-        console.log("📤 Отправка:", data);
-        const response = await tg.sendData(JSON.stringify(data));
-        console.log("📥 Ответ:", response);
-        try {
-            return JSON.parse(response);
-        } catch(e) {
-            console.error("Ошибка парсинга:", e);
-            return {};
-        }
-    }
-    
-    async function loadData() {
-        // Загружаем баланс
-        const userData = await sendRequest('get_data');
-        balance = userData.balance || 0;
-        document.getElementById('profileInfo').innerHTML = `
-            <h3>👤 Профиль</h3>
-            <p>Баланс: ${balance} ₽</p>
-            <p>Всего заказов: ${userData.total_orders || 0}</p>
-            <button id="supportBtn">📞 Техподдержка</button>
-        `;
-        document.getElementById('supportBtn')?.addEventListener('click', () => {
-            window.open('https://t.me/MarketAura_bot?start=support');
-        });
+    <div id="productsList" style="text-align:center;">Загрузка товаров...</div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
         
-        // Загружаем товары
-        const productsData = await sendRequest('get_products');
-        allProducts = productsData.products || [];
-        console.log("Загружено товаров:", allProducts.length);
-        
-        if (allProducts.length === 0) {
-            document.getElementById('productsList').innerHTML = '<div class="card">❌ Нет товаров в базе. Добавь через админку бота.</div>';
-        } else {
-            document.getElementById('productsList').innerHTML = allProducts.map(p => `
-                <div class="card">
-                    <h3>${p.name}</h3>
-                    <p>💰 Цена: ${p.price} ₽</p>
-                    <p>📁 Категория: ${p.category}</p>
-                    <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">🛒 В корзину</button>
-                </div>
-            `).join('');
-            
-            document.querySelectorAll('.add-to-cart').forEach(btn => {
-                btn.onclick = () => {
-                    const id = parseInt(btn.dataset.id);
-                    const name = btn.dataset.name;
-                    const price = parseInt(btn.dataset.price);
-                    const exist = cart.find(i => i.id === id);
-                    if (exist) exist.qty++;
-                    else cart.push({id, name, price, qty: 1});
-                    tg.showPopup({title: "Добавлено", message: `${name} в корзине`, buttons:[{type:"ok"}]});
-                    updateCartUI();
-                };
-            });
-        }
-    }
-    
-    function updateCartUI() {
-        const cartContainer = document.getElementById('cartList');
-        const orderBtn = document.getElementById('orderBtn');
-        if (cart.length === 0) {
-            cartContainer.innerHTML = '<div class="card">🛒 Корзина пуста</div>';
-            orderBtn.classList.add('hidden');
-        } else {
-            const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
-            cartContainer.innerHTML = cart.map(i => `
-                <div class="card">
-                    <b>${i.name}</b> x${i.qty} = ${i.price * i.qty} ₽
-                    <button class="remove-item" data-id="${i.id}">❌ Удалить</button>
-                </div>
-            `).join('');
-            cartContainer.innerHTML += `<div class="card"><b>Итого: ${total} ₽</b></div>`;
-            orderBtn.classList.remove('hidden');
-            
-            document.querySelectorAll('.remove-item').forEach(btn => {
-                btn.onclick = () => {
-                    cart = cart.filter(i => i.id !== parseInt(btn.dataset.id));
-                    updateCartUI();
-                };
-            });
-        }
-    }
-    
-    document.getElementById('orderBtn')?.addEventListener('click', async () => {
-        const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
-        if (balance >= total) {
-            const result = await sendRequest('order', {items: cart, total});
-            if (result.success) {
-                balance = result.new_balance;
-                cart = [];
-                updateCartUI();
-                tg.showPopup({title: "✅ Успех", message: "Заказ оформлен!", buttons:[{type:"ok"}]});
-                loadData();
-            } else {
-                tg.showPopup({title: "Ошибка", message: result.error, buttons:[{type:"ok"}]});
+        async function sendRequest(action, data = {}) {
+            data.action = action;
+            console.log("📤 Отправка:", data);
+            const response = await tg.sendData(JSON.stringify(data));
+            console.log("📥 Ответ:", response);
+            try {
+                return JSON.parse(response);
+            } catch(e) {
+                console.error("Ошибка парсинга:", e);
+                return {};
             }
-        } else {
-            tg.showPopup({title: "Ошибка", message: "Недостаточно средств", buttons:[{type:"ok"}]});
         }
-    });
-    
-    function showTab(tab) {
-        currentTab = tab;
-        document.getElementById('catalogSection').classList.add('hidden');
-        document.getElementById('profileSection').classList.add('hidden');
-        document.getElementById('cartSection').classList.add('hidden');
-        if (tab === 'catalog') document.getElementById('catalogSection').classList.remove('hidden');
-        if (tab === 'profile') document.getElementById('profileSection').classList.remove('hidden');
-        if (tab === 'cart') {
-            document.getElementById('cartSection').classList.remove('hidden');
-            updateCartUI();
+        
+        async function loadProducts() {
+            document.getElementById('productsList').innerHTML = '⏳ Загрузка...';
+            const result = await sendRequest('get_products');
+            console.log("Результат get_products:", result);
+            
+            if (result.products && result.products.length > 0) {
+                document.getElementById('productsList').innerHTML = result.products.map(p => `
+                    <div class="card">
+                        <h3>${p.name}</h3>
+                        <div class="price">💰 ${p.price} ₽</div>
+                        <div>📁 Категория: ${p.category}</div>
+                        <button class="btn-primary" onclick="alert('Демо: товар ${p.name} добавлен в корзину')">🛒 В корзину</button>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('productsList').innerHTML = `
+                    <div class="card">
+                        ❌ Нет товаров в базе.<br><br>
+                        Проверь:<br>
+                        1. В админке бота добавь товар<br>
+                        2. Перезапусти Mini App
+                    </div>
+                `;
+            }
         }
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.tab === tab) btn.classList.add('active');
-        });
-    }
-    
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.onclick = () => showTab(btn.dataset.tab);
-    });
-    
-    loadData();
-</script>
+        
+        loadProducts();
+    </script>
 </body>
 </html>
