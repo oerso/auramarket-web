@@ -37,34 +37,24 @@
             background: #2a2a3a;
             border: 1px solid rgba(179,0,255,0.3);
         }
-        .payment-methods {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 15px 0;
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            padding: 10px;
         }
-        .payment-item {
+        .product-card {
             background: rgba(25,25,50,0.7);
-            border-radius: 24px;
-            padding: 15px;
+            border-radius: 28px;
+            padding: 16px;
+            border: 1px solid rgba(179,0,255,0.25);
             cursor: pointer;
             transition: 0.2s;
-            border: 1px solid rgba(179,0,255,0.3);
         }
-        .payment-item:hover { border-color: #b300ff; transform: translateX(5px); }
-        .payment-item.selected { background: rgba(179,0,255,0.2); border-color: #b300ff; }
-        .amount-input {
-            width: 100%; padding: 14px; background: #1a1a2e;
-            border: 1px solid #b300ff; border-radius: 24px;
-            color: white; font-size: 18px; text-align: center; margin: 15px 0;
+        .product-card:hover {
+            border-color: #b300ff;
+            transform: translateY(-2px);
         }
-        .min-amount { text-align: center; color: #ff4444; font-size: 12px; margin-top: -10px; margin-bottom: 15px; }
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 10px; }
-        .product-card {
-            background: rgba(25,25,50,0.7); border-radius: 28px; padding: 16px;
-            border: 1px solid rgba(179,0,255,0.25); cursor: pointer; transition: 0.2s;
-        }
-        .product-card:hover { border-color: #b300ff; transform: translateY(-2px); }
         .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(179,0,255,0.2); }
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
@@ -78,28 +68,85 @@
             cursor: pointer; padding: 6px 12px; border-radius: 40px;
         }
         .nav-item.active { color: #b300ff; background: rgba(179,0,255,0.15); }
-        .logo { text-align: center; margin-bottom: 10px; }
-        .logo-letters { display: flex; justify-content: center; align-items: center; gap: 0; }
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .logo-letters {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+        }
         .logo-letter {
-            font-size: 48px; font-weight: 900;
+            font-size: 48px;
+            font-weight: 900;
             background: linear-gradient(145deg, #fff, #b300ff);
-            -webkit-background-clip: text; background-clip: text; color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             letter-spacing: -5px;
         }
-        .logo-sub { font-size: 12px; color: #b300ff; margin-top: -8px; }
-        .price { color: #b300ff; font-weight: bold; font-size: 18px; }
-        .category-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid rgba(179,0,255,0.3); }
-        .category-icon { font-size: 32px; }
+        .logo-sub {
+            font-size: 12px;
+            color: #b300ff;
+            margin-top: -8px;
+        }
+        .price {
+            color: #b300ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(179,0,255,0.3);
+        }
+        .category-icon { font-size: 32px; width: 40px; text-align: center; }
         .category-title { font-size: 22px; font-weight: bold; }
-        .subcategory-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-        .subcategory-btn { background: rgba(179,0,255,0.2); border-radius: 30px; padding: 8px 20px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .subcategory-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .subcategory-btn {
+            background: rgba(179,0,255,0.2);
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
         .subcategory-btn.active { background: #b300ff; }
-        .back-btn { background: #2a2a3a; border: none; padding: 10px 20px; border-radius: 30px; color: white; cursor: pointer; margin-bottom: 16px; display: inline-block; }
-        .product-detail { background: rgba(25,25,50,0.9); border-radius: 28px; padding: 20px; }
+        .back-btn {
+            background: #2a2a3a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+        .product-detail {
+            background: rgba(25,25,50,0.9);
+            border-radius: 28px;
+            padding: 20px;
+        }
         .product-detail h2 { margin-bottom: 12px; }
         .product-detail .price { font-size: 28px; margin: 16px 0; }
         .product-detail .description { color: #ccc; line-height: 1.5; margin: 16px 0; }
-        .link-item { background: rgba(179,0,255,0.1); border-radius: 16px; padding: 12px; margin: 8px 0; word-break: break-all; }
+        .link-item {
+            background: rgba(179,0,255,0.1);
+            border-radius: 16px;
+            padding: 12px;
+            margin: 8px 0;
+            word-break: break-all;
+        }
         .link-item a { color: #b300ff; text-decoration: none; }
         .empty-stock { text-align: center; padding: 40px; color: #aaa; }
         .chat-messages { max-height: 400px; overflow-y: auto; margin-bottom: 12px; padding-right: 8px; }
@@ -113,15 +160,14 @@
             background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
             display: flex; align-items: center; justify-content: center; z-index: 1000;
         }
-        .modal-content { background: #1a1a2e; border-radius: 32px; padding: 24px; width: 90%; max-width: 400px; border: 1px solid #b300ff; max-height: 80vh; overflow-y: auto; }
-        .modal-input { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid #b300ff; border-radius: 24px; color: white; margin: 16px 0; }
-        .modal-buttons { display: flex; gap: 12px; margin-top: 15px; }
+        .modal-content {
+            background: #1a1a2e; border-radius: 32px; padding: 24px;
+            width: 90%; max-width: 400px; border: 1px solid #b300ff;
+        }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
         .modal-btn { flex: 1; padding: 12px; border-radius: 40px; font-weight: bold; cursor: pointer; text-align: center; }
         .modal-btn-confirm { background: linear-gradient(90deg, #b300ff, #6a00ff); color: white; }
         .modal-btn-cancel { background: #2a2a3a; color: #aaa; }
-        .invoice-info { background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; margin: 15px 0; text-align: center; }
-        .copy-btn { background: #b300ff; border: none; padding: 8px 15px; border-radius: 20px; color: white; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -164,142 +210,106 @@
     let currentSubcategory = null;
     let currentProduct = null;
     
-    // ==================== ПОЛНЫЙ АССОРТИМЕНТ ====================
+    // ==================== АССОРТИМЕНТ С ЛОГОТИПАМИ ====================
     const categories = {
-        "Steam": {
-            icon: "🎮",
-            products: [
-                { id: "steam_1", name: "Steam | Новорег | Чистый", price: 9, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
+        "Steam": { icon: "🟢", iconUrl: "https://cdn.cdnlogo.com/logos/s/25/steam.svg", products: [
+            { id: "steam_1", name: "Steam | Новорег | Чистый", price: 9, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
+        ] },
+        "Telegram": { icon: "✈️", subcategories: ["Аккаунты", "Накрутка", "Гайды/Мануалы"], products: {
+            "Аккаунты": [
+                { id: "tg_us", name: "Чистый аккаунт, авторег | США", price: 99, type: "account", description: "Советы при входе..." },
+                { id: "tg_mm", name: "Чистый аккаунт, авторег | Мьянма", price: 79, type: "account", description: "..." },
+                { id: "tg_ua", name: "Чистый аккаунт, авторег | Украина", price: 299, type: "account", description: "..." },
+                { id: "tg_uz", name: "Чистый аккаунт, авторег | Узбекистан", price: 299, type: "account", description: "..." },
+                { id: "tg_kz", name: "Чистый аккаунт, авторег | Казахстан", price: 299, type: "account", description: "..." },
+                { id: "tg_eg", name: "Чистый аккаунт, авторег | Египет", price: 169, type: "account", description: "..." },
+                { id: "tg_ph", name: "Чистый аккаунт, авторег | Филиппины", price: 199, type: "account", description: "..." },
+                { id: "tg_vn", name: "Чистый аккаунт, авторег | Вьетнам", price: 199, type: "account", description: "..." },
+                { id: "tg_co", name: "Чистый аккаунт, авторег | Колумбия", price: 149, type: "account", description: "..." },
+                { id: "tg_ca", name: "Чистый аккаунт, авторег | Канада", price: 119, type: "account", description: "..." },
+                { id: "tg_in", name: "Чистый аккаунт, авторег | Индия", price: 79, type: "account", description: "..." },
+                { id: "tg_bd", name: "Чистый аккаунт, авторег | Бангладеш", price: 79, type: "account", description: "..." }
+            ],
+            "Накрутка": [{ id: "tg_boost", name: "Накрутка Telegram", price: 0, type: "empty", description: "❌ Нет в наличии" }],
+            "Гайды/Мануалы": [{ id: "tg_guides", name: "Гайды Telegram", price: 0, type: "empty", description: "❌ Нет в наличии" }]
+        } },
+        "GTA V": { icon: "🎮", subcategories: ["Steam", "Epic Games", "Rockstar Games"], products: {
+            "Steam": [
+                { id: "gta_legasy", name: "GTA V | Legasy", price: 1429, type: "account", description: "- Чистый аккаунт, без блокировок..." },
+                { id: "gta_enhanced", name: "GTA V | Enhanced", price: 1429, type: "account", description: "- Чистый аккаунт..." },
+                { id: "gta_premium", name: "GTA V | Premium", price: 1699, type: "account", description: "- Чистый аккаунт..." }
+            ],
+            "Epic Games": [{ id: "gta_epic_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }],
+            "Rockstar Games": [{ id: "gta_rockstar_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }]
+        } },
+        "TikTok": { icon: "📱", subcategories: ["Аккаунты", "Накрутка"], products: {
+            "Аккаунты": [
+                { id: "tt_de", name: "Чистый аккаунт, авторег | Германия", price: 19, type: "account", description: "- Чистый аккаунт..." },
+                { id: "tt_nl", name: "Чистый аккаунт, авторег | Нидерланды", price: 19, type: "account", description: "..." },
+                { id: "tt_se", name: "Чистый аккаунт, авторег | Швеция", price: 19, type: "account", description: "..." },
+                { id: "tt_pl", name: "Чистый аккаунт, авторег | Польша", price: 19, type: "account", description: "..." },
+                { id: "tt_es", name: "Чистый аккаунт, авторег | Испания", price: 19, type: "account", description: "..." },
+                { id: "tt_us", name: "Чистый аккаунт, авторег | США", price: 19, type: "account", description: "..." },
+                { id: "tt_fr", name: "Чистый аккаунт, авторег | Франция", price: 19, type: "account", description: "..." }
+            ],
+            "Накрутка": [{ id: "tt_boost", name: "Накрутка TikTok", price: 0, type: "empty", description: "❌ Нет в наличии" }]
+        } },
+        "Counter-Strike 2": { icon: "🎯", subcategories: ["Аккаунты", "Гайды"], products: {
+            "Аккаунты": [
+                { id: "cs2_prime", name: "Counter-Strike | Prime", price: 1249, type: "account", description: "- Чистый аккаунт..." },
+                { id: "cs2_new", name: "Чистый аккаунт, новорег", price: 25, type: "account", description: "- Чистый аккаунт..." }
+            ],
+            "Гайды": [
+                { id: "cs2_guide1", name: "ПАК КОНФИГОВ | NIPL, SIMPLE, ELECTRONIC, PERFECTO", price: 9, type: "link", url: "https://disk.yandex.ru/d/tLSGBEqsYlrHnw", description: "Пак конфигов" },
+                { id: "cs2_guide2", name: "СОВЕТЫ И ПРИНЦИПЫ ДЛЯ УСПЕШНОЙ ИГРЫ НА FACEIT", price: 9, type: "link", url: "https://clck.ru/33WqBA", description: "Гайд по игре на Faceit" },
+                { id: "cs2_guide3", name: "КАК АПНУТЬ 10ЛВЛ FACEIT", price: 9, type: "link", url: "https://clck.ru/33Wq7r", description: "Как достичь 10 уровня" },
+                { id: "cs2_guide4", name: "КАК СДЕЛАТЬ АНИМИРОВАННЫЙ НИК", price: 9, type: "link", url: "https://docs.google.com/document/u/0/d/1yzyZGfJ6yyiWuQu3hOx1clliZfhwC02H7inV8AQtL3Q/mobilebasic", description: "Как сделать анимированный ник" },
+                { id: "cs2_guide5", name: "СПОСОБ ПОЛУЧЕНИЯ СКИНОВ | ХАЛЯВА", price: 9, type: "link", url: "https://docs.google.com/document/d/1lQkSapwmgXNc3dO-fXULCKz3MTzY-u6nj2EQJm21zek/edit?usp=sharing", description: "Бесплатные скины" },
+                { id: "cs2_guide6", name: "ПОВЫШЕНИЕ ФПС | ОПТИМИЗАЦИЯ", price: 9, type: "link", url: "https://telegra.ph/GAJD-KAK-POVYSIT-FPS-V-KS-GO-07-07", description: "Оптимизация FPS" }
             ]
-        },
-        "Telegram": {
-            icon: "📱",
-            subcategories: ["Аккаунты", "Накрутка", "Гайды/Мануалы"],
-            products: {
-                "Аккаунты": [
-                    { id: "tg_us", name: "Чистый аккаунт, авторег | США", price: 99, type: "account", description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
-                    { id: "tg_mm", name: "Чистый аккаунт, авторег | Мьянма", price: 79, type: "account", description: "..." },
-                    { id: "tg_ua", name: "Чистый аккаунт, авторег | Украина", price: 299, type: "account", description: "..." },
-                    { id: "tg_uz", name: "Чистый аккаунт, авторег | Узбекистан", price: 299, type: "account", description: "..." },
-                    { id: "tg_kz", name: "Чистый аккаунт, авторег | Казахстан", price: 299, type: "account", description: "..." },
-                    { id: "tg_eg", name: "Чистый аккаунт, авторег | Египет", price: 169, type: "account", description: "..." },
-                    { id: "tg_ph", name: "Чистый аккаунт, авторег | Филиппины", price: 199, type: "account", description: "..." },
-                    { id: "tg_vn", name: "Чистый аккаунт, авторег | Вьетнам", price: 199, type: "account", description: "..." },
-                    { id: "tg_co", name: "Чистый аккаунт, авторег | Колумбия", price: 149, type: "account", description: "..." },
-                    { id: "tg_ca", name: "Чистый аккаунт, авторег | Канада", price: 119, type: "account", description: "..." },
-                    { id: "tg_in", name: "Чистый аккаунт, авторег | Индия", price: 79, type: "account", description: "..." },
-                    { id: "tg_bd", name: "Чистый аккаунт, авторег | Бангладеш", price: 79, type: "account", description: "..." }
-                ],
-                "Накрутка": [{ id: "tg_boost", name: "Накрутка Telegram", price: 0, type: "empty", description: "❌ Нет в наличии" }],
-                "Гайды/Мануалы": [{ id: "tg_guides", name: "Гайды Telegram", price: 0, type: "empty", description: "❌ Нет в наличии" }]
-            }
-        },
-        "GTA V": {
-            icon: "🏎️",
-            subcategories: ["Steam", "Epic Games", "Rockstar Games"],
-            products: {
-                "Steam": [
-                    { id: "gta_legasy", name: "GTA V | Legasy", price: 1429, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
-                    { id: "gta_enhanced", name: "GTA V | Enhanced", price: 1429, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
-                    { id: "gta_premium", name: "GTA V | Premium", price: 1699, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
-                ],
-                "Epic Games": [{ id: "gta_epic_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }],
-                "Rockstar Games": [{ id: "gta_rockstar_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }]
-            }
-        },
-        "TikTok": {
-            icon: "📱",
-            subcategories: ["Аккаунты", "Накрутка"],
-            products: {
-                "Аккаунты": [
-                    { id: "tt_de", name: "Чистый аккаунт, авторег | Германия", price: 19, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
-                    { id: "tt_nl", name: "Чистый аккаунт, авторег | Нидерланды", price: 19, type: "account", description: "..." },
-                    { id: "tt_se", name: "Чистый аккаунt, авторег | Швеция", price: 19, type: "account", description: "..." },
-                    { id: "tt_pl", name: "Чистый аккаунт, авторег | Польша", price: 19, type: "account", description: "..." },
-                    { id: "tt_es", name: "Чистый аккаунт, авторег | Испания", price: 19, type: "account", description: "..." },
-                    { id: "tt_us", name: "Чистый аккаунт, авторег | США", price: 19, type: "account", description: "..." },
-                    { id: "tt_fr", name: "Чистый аккаунт, авторег | Франция", price: 19, type: "account", description: "..." }
-                ],
-                "Накрутка": [{ id: "tt_boost", name: "Накрутка TikTok", price: 0, type: "empty", description: "❌ Нет в наличии" }]
-            }
-        },
-        "Counter-Strike 2": {
-            icon: "🎯",
-            subcategories: ["Аккаунты", "Гайды"],
-            products: {
-                "Аккаунты": [
-                    { id: "cs2_prime", name: "Counter-Strike | Prime", price: 1249, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
-                    { id: "cs2_new", name: "Чистый аккаунт, новорег", price: 25, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
-                ],
-                "Гайды": [
-                    { id: "cs2_guide1", name: "ПАК КОНФИГОВ | NIPL, SIMPLE, ELECTRONIC, PERFECTO", price: 9, type: "link", url: "https://disk.yandex.ru/d/tLSGBEqsYlrHnw", description: "Пак конфигов от профессиональных игроков" },
-                    { id: "cs2_guide2", name: "СОВЕТЫ И ПРИНЦИПЫ ДЛЯ УСПЕШНОЙ ИГРЫ НА FACEIT", price: 9, type: "link", url: "https://clck.ru/33WqBA", description: "Гайд по игре на Faceit" },
-                    { id: "cs2_guide3", name: "КАК АПНУТЬ 10ЛВЛ FACEIT", price: 9, type: "link", url: "https://clck.ru/33Wq7r", description: "Как достичь 10 уровня на Faceit" },
-                    { id: "cs2_guide4", name: "КАК СДЕЛАТЬ АНИМИРОВАННЫЙ НИК", price: 9, type: "link", url: "https://docs.google.com/document/u/0/d/1yzyZGfJ6yyiWuQu3hOx1clliZfhwC02H7inV8AQtL3Q/mobilebasic", description: "Как сделать анимированный ник в CS2" },
-                    { id: "cs2_guide5", name: "СПОСОБ ПОЛУЧЕНИЯ СКИНОВ | ХАЛЯВА", price: 9, type: "link", url: "https://docs.google.com/document/d/1lQkSapwmgXNc3dO-fXULCKz3MTzY-u6nj2EQJm21zek/edit?usp=sharing", description: "Бесплатные скины и способы заработка" },
-                    { id: "cs2_guide6", name: "ПОВЫШЕНИЕ ФПС | ОПТИМИЗАЦИЯ", price: 9, type: "link", url: "https://telegra.ph/GAJD-KAK-POVYSIT-FPS-V-KS-GO-07-07", description: "Оптимизация и повышение FPS" }
-                ]
-            }
-        },
-        "Rust": {
-            icon: "🦀",
-            subcategories: ["Аккаунты", "Гайды"],
-            products: {
-                "Аккаунты": [
-                    { id: "rust_clean", name: "Rust | Чистый", price: 929, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
-                    { id: "rust_key", name: "Rust | Ключ", price: 929, type: "account", description: "..." },
-                    { id: "rust_gift", name: "Rust | Гифт", price: 929, type: "account", description: "..." }
-                ],
-                "Гайды": [
-                    { id: "rust_guide1", name: "ЛУЧШИЕ ФИШКИ И СЕКРЕТЫ", price: 9, type: "link", url: "https://disk.yandex.ru/i/wqz_iuHy68haYA", description: "Полезные фишки и секреты" },
-                    { id: "rust_guide2", name: "КАК СДЕЛАТЬ АВТОБЕГ", price: 9, type: "link", url: "https://disk.yandex.ru/i/glZCRrYSX2wYCw", description: "Как сделать автобег в Rust" },
-                    { id: "rust_guide3", name: "КИБЕРСПОРТИВНОЕ РАЗРЕШЕНИЕ", price: 9, type: "link", url: "https://drive.google.com/drive/folders/1-Zx-gPTGR8UwR9oQBJip68tHCjQ5NKN-?usp=sharing", description: "Настройки разрешения" },
-                    { id: "rust_guide4", name: "КАК ЛУЧШЕ ВИДЕТЬ НОЧЬЮ", price: 9, type: "link", url: "https://drive.google.com/drive/folders/1kvdRPVyoWk4MNiWHTDQEWElkv5XmENzy?usp=sharing", description: "Настройки видимости ночью" },
-                    { id: "rust_guide5", name: "КАК ОБОЙТИ *КИК* С СЕРВЕРА", price: 9, type: "link", url: "https://drive.google.com/drive/folders/1iYKpSPgTDrwBrr8ZdsRz3MkUyUrdUhSx?usp=sharing", description: "Обход кика с сервера" },
-                    { id: "rust_guide6", name: "ОПТИМИЗАЦИЯ+БУСТ ФПС ДЛЯ СЛАБЫХ ПК", price: 9, type: "link", url: "https://drive.google.com/drive/folders/1GKre-vD3z8_eatN20MY_8KyJOKBYxNFV?usp=sharing", description: "Оптимизация FPS для слабых ПК" }
-                ]
-            }
-        },
-        "Dota 2": {
-            icon: "⚔️",
-            subcategories: ["Аккаунты", "Гайды"],
-            products: {
-                "Аккаунты": [
-                    { id: "dota_new", name: "Чистый аккаунт, новорег", price: 29, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
-                    { id: "dota_1k", name: "Буст аккаунт, 1000 MMR", price: 699, type: "account", description: "..." },
-                    { id: "dota_5k", name: "Буст аккаунт, 5000 MMR", price: 1899, type: "account", description: "..." }
-                ],
-                "Гайды": [
-                    { id: "dota_guide1", name: "КОМАНДЫ ДЛЯ ПАРАМЕТРА ЗАПУСКА", price: 9, type: "link", url: "https://docs.google.com/document/d/1Y4gVupNqRaSA2I1Saimh509sins4kZXsE2MgtqtkFio/edit?usp=sharing", description: "Команды для параметров запуска" },
-                    { id: "dota_guide2", name: "СПОСОБ КАК ИЗМЕНИТЬ ШРИФТ", price: 9, type: "link", url: "https://docs.google.com/document/d/1LYEfE_dpBCeoc5ruMh_ZFBNSh8dta9BdePRtVJDcYbw/edit", description: "Как изменить шрифт в Dota 2" },
-                    { id: "dota_guide3", name: "ОБЩИЙ ГАЙД ПО ATOMIC WAR", price: 9, type: "link", url: "https://telegra.ph/Obshchij-gajd-po-Atomic-War-v-Dota-2--promokody-lordy-sborki-geroi-rangi-kastomka-rejting-i-drugie-sovety-po-novomu-rezhimu-01-05-8", description: "Полный гайд по Atomic War" },
-                    { id: "dota_guide4", name: "ГАЙД, ЧТОБЫ УБРАТЬ ТОРМОЖЕНИЯ", price: 9, type: "link", url: "https://telegra.ph/Dota-2-vyletaet-Sinij-ehkran-Tormozit-Ne-zapuskaetsya--Reshenie-problem-01-05-7", description: "Как убрать торможения и лаги" }
-                ]
-            }
-        },
-        "Discord": {
-            icon: "🎙️",
-            subcategories: ["Аккаунты", "Nitro"],
-            products: {
-                "Аккаунты": [
-                    { id: "discord_uk", name: "Чистый аккаунт, новорег | Англия", price: 29, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
-                    { id: "discord_us", name: "Чистый аккаунт, новорег | США", price: 29, type: "account", description: "..." },
-                    { id: "discord_ru", name: "Чистый аккаунт, новорег | Россия", price: 29, type: "account", description: "..." }
-                ],
-                "Nitro": [
-                    { id: "discord_nitro", name: "Discord | Nitro trial | 1 месяц", price: 99, type: "account", description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
-                ]
-            }
-        },
+        } },
+        "Rust": { icon: "🦀", subcategories: ["Аккаунты", "Гайды"], products: {
+            "Аккаунты": [
+                { id: "rust_clean", name: "Rust | Чистый", price: 929, type: "account", description: "- Чистый аккаунт..." },
+                { id: "rust_key", name: "Rust | Ключ", price: 929, type: "account", description: "..." },
+                { id: "rust_gift", name: "Rust | Гифт", price: 929, type: "account", description: "..." }
+            ],
+            "Гайды": [
+                { id: "rust_guide1", name: "ЛУЧШИЕ ФИШКИ И СЕКРЕТЫ", price: 9, type: "link", url: "https://disk.yandex.ru/i/wqz_iuHy68haYA", description: "Полезные фишки" },
+                { id: "rust_guide2", name: "КАК СДЕЛАТЬ АВТОБЕГ", price: 9, type: "link", url: "https://disk.yandex.ru/i/glZCRrYSX2wYCw", description: "Автобег" },
+                { id: "rust_guide3", name: "КИБЕРСПОРТИВНОЕ РАЗРЕШЕНИЕ", price: 9, type: "link", url: "https://drive.google.com/drive/folders/1-Zx-gPTGR8UwR9oQBJip68tHCjQ5NKN-?usp=sharing", description: "Настройки разрешения" },
+                { id: "rust_guide4", name: "КАК ЛУЧШЕ ВИДЕТЬ НОЧЬЮ", price: 9, type: "link", url: "https://drive.google.com/drive/folders/1kvdRPVyoWk4MNiWHTDQEWElkv5XmENzy?usp=sharing", description: "Настройки видимости" },
+                { id: "rust_guide5", name: "КАК ОБОЙТИ *КИК* С СЕРВЕРА", price: 9, type: "link", url: "https://drive.google.com/drive/folders/1iYKpSPgTDrwBrr8ZdsRz3MkUyUrdUhSx?usp=sharing", description: "Обход кика" },
+                { id: "rust_guide6", name: "ОПТИМИЗАЦИЯ+БУСТ ФПС ДЛЯ СЛАБЫХ ПК", price: 9, type: "link", url: "https://drive.google.com/drive/folders/1GKre-vD3z8_eatN20MY_8KyJOKBYxNFV?usp=sharing", description: "Оптимизация FPS" }
+            ]
+        } },
+        "Dota 2": { icon: "⚔️", subcategories: ["Аккаунты", "Гайды"], products: {
+            "Аккаунты": [
+                { id: "dota_new", name: "Чистый аккаунт, новорег", price: 29, type: "account", description: "- Чистый аккаунт..." },
+                { id: "dota_1k", name: "Буст аккаунт, 1000 MMR", price: 699, type: "account", description: "..." },
+                { id: "dota_5k", name: "Буст аккаунт, 5000 MMR", price: 1899, type: "account", description: "..." }
+            ],
+            "Гайды": [
+                { id: "dota_guide1", name: "КОМАНДЫ ДЛЯ ПАРАМЕТРА ЗАПУСКА", price: 9, type: "link", url: "https://docs.google.com/document/d/1Y4gVupNqRaSA2I1Saimh509sins4kZXsE2MgtqtkFio/edit?usp=sharing", description: "Команды запуска" },
+                { id: "dota_guide2", name: "СПОСОБ КАК ИЗМЕНИТЬ ШРИФТ", price: 9, type: "link", url: "https://docs.google.com/document/d/1LYEfE_dpBCeoc5ruMh_ZFBNSh8dta9BdePRtVJDcYbw/edit", description: "Изменение шрифта" },
+                { id: "dota_guide3", name: "ОБЩИЙ ГАЙД ПО ATOMIC WAR", price: 9, type: "link", url: "https://telegra.ph/Obshchij-gajd-po-Atomic-War-v-Dota-2--promokody-lordy-sborki-geroi-rangi-kastomka-rejting-i-drugie-sovety-po-novomu-rezhimu-01-05-8", description: "Гайд по Atomic War" },
+                { id: "dota_guide4", name: "ГАЙД, ЧТОБЫ УБРАТЬ ТОРМОЖЕНИЯ", price: 9, type: "link", url: "https://telegra.ph/Dota-2-vyletaet-Sinij-ehkran-Tormozit-Ne-zapuskaetsya--Reshenie-problem-01-05-7", description: "Убрать торможения" }
+            ]
+        } },
+        "Discord": { icon: "🎙️", subcategories: ["Аккаунты", "Nitro"], products: {
+            "Аккаунты": [
+                { id: "discord_uk", name: "Чистый аккаунт, новорег | Англия", price: 29, type: "account", description: "- Чистый аккаунт..." },
+                { id: "discord_us", name: "Чистый аккаунт, новорег | США", price: 29, type: "account", description: "..." },
+                { id: "discord_ru", name: "Чистый аккаунт, новорег | Россия", price: 29, type: "account", description: "..." }
+            ],
+            "Nitro": [{ id: "discord_nitro", name: "Discord | Nitro trial | 1 месяц", price: 99, type: "account", description: "- Чистый аккаунт..." }]
+        } },
         "Сигны": { icon: "💰", products: [{ id: "signals_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }] },
-        "Supercell": { icon: "🏰", products: [{ id: "supercell_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }] },
-        "Roblox": { icon: "🧸", products: [{ id: "roblox_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }] },
         "Chat-GPT": { icon: "🤖", products: [{ id: "chatgpt_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }] },
-        "Minecraft": { icon: "⛏️", products: [{ id: "minecraft_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }] },
         "YouTube": { icon: "📺", products: [{ id: "youtube_empty", name: "Нет в наличии", price: 0, type: "empty", description: "❌ Товары появятся скоро" }] }
     };
     
-    const categoryList = ["Steam", "Telegram", "GTA V", "TikTok", "Counter-Strike 2", "Rust", "Dota 2", "Discord", "Сигны", "Supercell", "Roblox", "Chat-GPT", "Minecraft", "YouTube"];
+    const categoryList = ["Steam", "Telegram", "GTA V", "TikTok", "Counter-Strike 2", "Rust", "Dota 2", "Discord", "Сигны", "Chat-GPT", "YouTube"];
     
     // ==================== ФУНКЦИИ ====================
     function escapeHtml(str) {
@@ -331,9 +341,9 @@
     
     async function loadUserData() {
         const data = await sendRequest('get_data');
-        balance = data.balance || 0;
-        totalOrders = data.total_orders || 0;
-        pendingOrders = data.pending_orders || 0;
+        if (data.balance !== undefined) balance = data.balance;
+        if (data.total_orders !== undefined) totalOrders = data.total_orders;
+        if (data.pending_orders !== undefined) pendingOrders = data.pending_orders;
         renderCurrentTab();
     }
     
@@ -344,132 +354,22 @@
         localStorage.setItem('auramarket_promo_count', promoCount);
     }
     
-    // ==================== ПОПОЛНЕНИЕ БАЛАНСА ====================
+    // ==================== ПОПОЛНЕНИЕ БАЛАНСА (ТОЛЬКО ПЕРЕХОД В БОТА) ====================
     async function showReplenishModal() {
-        let selectedMethod = 'stars';
-        let amount = 100;
-        
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3 style="text-align:center;">💸 Пополнение баланса</h3>
-                <div class="payment-methods" id="paymentMethods">
-                    <div class="payment-item selected" data-method="stars">💎 Telegram Stars</div>
-                    <div class="payment-item" data-method="send">💰 @send (криптобот)</div>
-                    <div class="payment-item" data-method="ton">💎 TON</div>
-                    <div class="payment-item" data-method="card">💳 Банковские карты РФ (в разработке)</div>
-                </div>
-                <input type="number" id="amountInput" class="amount-input" value="100" min="30" step="10" placeholder="Сумма в ₽">
-                <div class="min-amount">⚠️ Минимальная сумма пополнения: 30 ₽</div>
-                <div id="methodInfo" class="invoice-info" style="display:none;"></div>
-                <div class="modal-buttons">
-                    <div class="modal-btn modal-btn-cancel" id="cancelBtn">❌ Отмена</div>
-                    <div class="modal-btn modal-btn-confirm" id="confirmBtn">💸 Пополнить</div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        const paymentItems = modal.querySelectorAll('.payment-item');
-        paymentItems.forEach(item => {
-            item.onclick = () => {
-                paymentItems.forEach(i => i.classList.remove('selected'));
-                item.classList.add('selected');
-                selectedMethod = item.dataset.method;
-                updateMethodInfo(selectedMethod, amount);
-            };
+        tg.showPopup({
+            title: "💸 Пополнение баланса",
+            message: "Перейдите в бота и пополните баланс в самом боте. После пополнения вернитесь сюда — деньги будут уже на вашем балансе.",
+            buttons: [
+                { id: "go", type: "default", text: "🚀 Перейти в бота" },
+                { id: "cancel", type: "cancel", text: "❌ Отмена" }
+            ]
+        }, (buttonId) => {
+            if (buttonId === "go") {
+                window.open('https://t.me/MarketAura_bot', '_blank');
+            }
         });
-        
-        const amountInput = modal.querySelector('#amountInput');
-        amountInput.oninput = () => {
-            amount = parseInt(amountInput.value) || 30;
-            if (amount < 30) amount = 30;
-            amountInput.value = amount;
-            updateMethodInfo(selectedMethod, amount);
-        };
-        
-        function updateMethodInfo(method, amt) {
-            const infoDiv = modal.querySelector('#methodInfo');
-            if (method === 'card') {
-                infoDiv.style.display = 'block';
-                infoDiv.innerHTML = '<p style="color:#ffaa00;">🔨 Технические работы. Способ временно недоступен.</p>';
-            } else {
-                infoDiv.style.display = 'none';
-            }
-        }
-        
-        modal.querySelector('#confirmBtn').onclick = async () => {
-            amount = parseInt(amountInput.value) || 30;
-            if (amount < 30) {
-                tg.showPopup({title: "Ошибка", message: "Минимальная сумма 30₽", buttons:[{type:"ok"}]});
-                return;
-            }
-            if (selectedMethod === 'card') {
-                tg.showPopup({title: "Ошибка", message: "Способ оплаты на технических работах", buttons:[{type:"ok"}]});
-                return;
-            }
-            modal.remove();
-            
-            const result = await sendRequest('create_invoice', {amount: amount, method: selectedMethod});
-            if (result && result.success) {
-                if (result.method === 'stars') {
-                    tg.showPopup({title: "💎 Telegram Stars", message: `Оплатите ${amount} Stars.\n\nПосле оплаты баланс пополнится автоматически.`, buttons:[{type:"ok"}]});
-                    const paidResult = await sendRequest('confirm_payment', {invoice_id: result.invoice_id});
-                    if (paidResult.success) {
-                        balance = paidResult.new_balance;
-                        tg.showPopup({title: "✅ Успех", message: `Баланс пополнен на ${amount} ₽!`, buttons:[{type:"ok"}]});
-                        if (currentTab === 'profile') renderCurrentTab();
-                    }
-                } else {
-                    const confirmModal = document.createElement('div');
-                    confirmModal.className = 'modal-overlay';
-                    confirmModal.innerHTML = `
-                        <div class="modal-content">
-                            <h3 style="text-align:center;">${result.method === 'send' ? '💰 Оплата через @send' : '💎 Оплата в TON'}</h3>
-                            <div class="invoice-info">
-                                <p><strong>Сумма:</strong> ${amount} ₽</p>
-                                <p><strong>Кошелёк:</strong> <span id="walletAddr">${result.wallet}</span></p>
-                                <p><strong>Комментарий:</strong> <span id="commentId">${result.invoice_id}</span></p>
-                                <button class="copy-btn" id="copyWallet">📋 Копировать кошелёк</button>
-                                <button class="copy-btn" id="copyComment">📋 Копировать комментарий</button>
-                            </div>
-                            <div class="modal-buttons">
-                                <div class="modal-btn modal-btn-cancel" id="closeConfirm">❌ Закрыть</div>
-                                <div class="modal-btn modal-btn-confirm" id="paidConfirm">✅ Я оплатил</div>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(confirmModal);
-                    confirmModal.querySelector('#copyWallet').onclick = () => {
-                        navigator.clipboard.writeText(result.wallet);
-                        tg.showPopup({title: "Скопировано", message: "Кошелёк скопирован", buttons:[{type:"ok"}]});
-                    };
-                    confirmModal.querySelector('#copyComment').onclick = () => {
-                        navigator.clipboard.writeText(result.invoice_id);
-                        tg.showPopup({title: "Скопировано", message: "Комментарий скопирован", buttons:[{type:"ok"}]});
-                    };
-                    confirmModal.querySelector('#closeConfirm').onclick = () => confirmModal.remove();
-                    confirmModal.querySelector('#paidConfirm').onclick = async () => {
-                        confirmModal.remove();
-                        const paidResult = await sendRequest('confirm_payment', {invoice_id: result.invoice_id});
-                        if (paidResult.success) {
-                            balance = paidResult.new_balance;
-                            tg.showPopup({title: "✅ Успех", message: paidResult.message, buttons:[{type:"ok"}]});
-                            if (currentTab === 'profile') renderCurrentTab();
-                        } else {
-                            tg.showPopup({title: "❌ Ошибка", message: paidResult.error || "Платеж не найден", buttons:[{type:"ok"}]});
-                        }
-                    };
-                }
-            } else {
-                tg.showPopup({title: "Ошибка", message: (result && result.error) || "Не удалось создать счёт", buttons:[{type:"ok"}]});
-            }
-        };
-        modal.querySelector('#cancelBtn').onclick = () => modal.remove();
     }
     
-    // ==================== НАВИГАЦИЯ ====================
     window.openCategory = function(catName) {
         catalogView = 'category';
         currentCategory = catName;
@@ -518,7 +418,6 @@
         }
     };
     
-    // ==================== ОТРИСОВКА ====================
     function renderMainCatalog() {
         let html = '<div class="products-grid">';
         for (let catName of categoryList) {
@@ -642,12 +541,12 @@
         return `
             <div class="glass-card">
                 <h3>📌 FAQ — часто задаваемые вопросы</h3><br>
-                <p><strong>1️⃣ Как быстро я получу товар?</strong><br>⚡️ Моментально. Сразу после подтверждения оплаты данные от аккаунта (логин:пароль) придут Вам в чат.</p><br>
-                <p><strong>2️⃣ Есть ли гарантия на аккаунты?</strong><br>🛡 Да. Мы гарантируем валидность аккаунта на момент покупки.</p><br>
-                <p><strong>3️⃣ Что делать, если аккаунт перестал работать через время?</strong><br>🚀 Срок жизни аккаунта зависит от ваших действий.</p><br>
-                <p><strong>4️⃣ Как правильно заходить в Telegram аккаунт?</strong><br>💡 Используйте качественные прокси/VPN той страны, на которую реган аккаунт.</p><br>
-                <p><strong>5️⃣ Какие способы оплаты доступны?</strong><br>💳 Telegram Stars, @send, TON. Банковские карты в разработке.</p><br>
-                <p><strong>6️⃣ Куда писать, если возникла проблема?</strong><br>📞 Пишите тикет админам в разделе "Тех.поддержка" в боте.</p>
+                <p><strong>1️⃣ Как быстро я получу товар?</strong><br>⚡️ Моментально...</p><br>
+                <p><strong>2️⃣ Есть ли гарантия на аккаунты?</strong><br>🛡 Да...</p><br>
+                <p><strong>3️⃣ Что делать, если аккаунт перестал работать?</strong><br>🚀 Срок жизни аккаунта зависит от ваших действий...</p><br>
+                <p><strong>4️⃣ Как правильно заходить в Telegram аккаунт?</strong><br>💡 Используйте прокси/VPN...</p><br>
+                <p><strong>5️⃣ Какие способы оплаты доступны?</strong><br>💳 Telegram Stars, @send, TON...</p><br>
+                <p><strong>6️⃣ Куда писать, если возникла проблема?</strong><br>📞 Пишите тикет админам...</p>
             </div>
             <div class="glass-card">
                 <button class="btn-primary btn-secondary" id="rulesBtn">📝 Правила и пользовательское соглашение</button>
@@ -815,4 +714,4 @@
     renderCurrentTab();
 </script>
 </body>
-</html>
+</html>      
