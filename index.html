@@ -48,6 +48,12 @@
             border-radius: 28px;
             padding: 16px;
             border: 1px solid rgba(179,0,255,0.25);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .product-card:hover {
+            border-color: #b300ff;
+            transform: translateY(-2px);
         }
         .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(179,0,255,0.2); }
         .bottom-nav {
@@ -91,6 +97,73 @@
             font-weight: bold;
             font-size: 18px;
         }
+        .category-section {
+            margin-bottom: 24px;
+        }
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(179,0,255,0.3);
+        }
+        .category-icon {
+            font-size: 32px;
+        }
+        .category-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .subcategory-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .subcategory-btn {
+            background: rgba(179,0,255,0.2);
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .subcategory-btn.active {
+            background: #b300ff;
+        }
+        .back-btn {
+            background: #2a2a3a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+        .product-detail {
+            background: rgba(25,25,50,0.9);
+            border-radius: 28px;
+            padding: 20px;
+        }
+        .product-detail h2 {
+            margin-bottom: 12px;
+        }
+        .product-detail .price {
+            font-size: 28px;
+            margin: 16px 0;
+        }
+        .product-detail .description {
+            color: #ccc;
+            line-height: 1.5;
+            margin: 16px 0;
+        }
+        .empty-stock {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
         .chat-messages {
             max-height: 400px;
             overflow-y: auto;
@@ -103,9 +176,7 @@
             padding: 10px;
             margin-bottom: 8px;
         }
-        .chat-message strong {
-            color: #b300ff;
-        }
+        .chat-message strong { color: #b300ff; }
         .chat-input-area {
             display: flex;
             gap: 8px;
@@ -130,19 +201,8 @@
             cursor: pointer;
         }
         .hidden { display: none; }
-        .category-chip {
-            background: rgba(179,0,255,0.2);
-            border-radius: 30px;
-            padding: 6px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            display: inline-block;
-            margin: 5px;
-        }
-        .category-chip.active { background: #b300ff; color: white; }
-        .categories { text-align: center; margin: 10px 0; }
         
-        /* Модальное окно для промокода */
+        /* Модальное окно */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -222,6 +282,7 @@
     tg.expand();
     const user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
     
+    // Данные пользователя
     let balance = 0;
     let totalOrders = 0;
     let activeOrders = 0;
@@ -229,22 +290,109 @@
     let promoCount = 0;
     
     let cart = [];
-    let allProducts = [];
-    let currentCategory = 'all';
-    let categories = new Set();
     let currentTab = 'catalog';
     let chatMessages = [];
     
-    const products = [
-        { id: 1, name: "Telegram Premium 1 мес", price: 129, category: "premium", emoji: "💎" },
-        { id: 2, name: "Ключ Windows 11 Pro", price: 149, category: "keys", emoji: "🔑" },
-        { id: 3, name: "TikTok USA аккаунт", price: 89, category: "accounts", emoji: "📱" },
-        { id: 4, name: "Накрутка TikTok 1000", price: 79, category: "boost", emoji: "📈" },
-        { id: 5, name: "ChatGPT Plus", price: 199, category: "premium", emoji: "🤖" },
-        { id: 6, name: "Discord Nitro месяц", price: 299, category: "premium", emoji: "🎮" },
-        { id: 7, name: "Steam ключ", price: 99, category: "keys", emoji: "🎲" },
-        { id: 8, name: "Instagram 1000 лайков", price: 59, category: "boost", emoji: "❤️" }
+    // Состояние навигации по каталогу
+    let catalogView = 'main'; // 'main', 'category', 'subcategory', 'product'
+    let currentCategory = null;
+    let currentSubcategory = null;
+    let currentProduct = null;
+    
+    // ==================== СТРУКТУРА ТОВАРОВ ====================
+    const categories = {
+        "Steam": {
+            icon: "🎮",
+            subcategories: null,
+            products: [
+                { id: "steam_1", name: "Steam | Новорег | Чистый", price: 9, description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
+            ]
+        },
+        "Telegram": {
+            icon: "📱",
+            subcategories: ["Аккаунты", "Накрутка", "Гайды/Мануалы"],
+            products: {
+                "Аккаунты": [
+                    { id: "tg_us", name: "Чистый аккаунт, авторег | США", price: 99, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_mm", name: "Чистый аккаунт, авторег | Мьянма", price: 79, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_ua", name: "Чистый аккаунт, авторег | Украина", price: 299, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_uz", name: "Чистый аккаунт, авторег | Узбекистан", price: 299, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_kz", name: "Чистый аккаунт, авторег | Казахстан", price: 299, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_eg", name: "Чистый аккаунт, авторег | Египет", price: 169, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_ph", name: "Чистый аккаунт, авторег | Филиппины", price: 199, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_vn", name: "Чистый аккаунт, авторег | Вьетнам", price: 199, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_co", name: "Чистый аккаунт, авторег | Колумбия", price: 149, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_ca", name: "Чистый аккаунт, авторег | Канада", price: 119, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_in", name: "Чистый аккаунт, авторег | Индия", price: 79, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                    { id: "tg_bd", name: "Чистый аккаунт, авторег | Бангладеш", price: 79, description: "Советы при входе в купленный Telegram‑аккаунт:\n- Убедитесь в легитимности сделки и сохраните переписку/квитанты.\n- Попросите подтверждение передачи (скриншоты, код восстановления) до входа.\n- Сразу смените пароль и привязанную почту/номер на свои.\n- Включите двухэтапную проверку (2FA).\n- Проверьте активные сессии и выйдите из всех незнакомых устройств.\n- Удалите лишние боты/чаты и проверьте настройки приватности.\n- Не используйте аккаунт до полной смены данных и проверки.\n- При подозрениях — обратитесь в поддержку Telegram.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
+                ],
+                "Накрутка": [{ id: "tg_boost", name: "Накрутка Telegram", price: 0, description: "❌ Нет в наличии", empty: true }],
+                "Гайды/Мануалы": [{ id: "tg_guides", name: "Гайды Telegram", price: 0, description: "❌ Нет в наличии", empty: true }]
+            }
+        },
+        "GTA V": {
+            icon: "🏎️",
+            subcategories: null,
+            products: [
+                { id: "gta_legasy", name: "GTA V | Legasy", price: 1429, description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                { id: "gta_enhanced", name: "GTA V | Enhanced", price: 1429, description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                { id: "gta_premium", name: "GTA V | Premium", price: 1699, description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
+            ]
+        },
+        "TikTok": { icon: "📱", subcategories: null, products: [{ id: "tt_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Counter-Strike 2": {
+            icon: "🎯",
+            subcategories: null,
+            products: [
+                { id: "cs2_prime", name: "Counter-Strike | Prime", price: 1249, description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
+            ]
+        },
+        "Rust": {
+            icon: "🦀",
+            subcategories: null,
+            products: [
+                { id: "rust_clean", name: "Rust | Чистый", price: 929, description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                { id: "rust_key", name: "Rust | Ключ", price: 929, description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." },
+                { id: "rust_gift", name: "Rust | Гифт", price: 929, description: "- Чистый аккаунт, без блокировок.\n- Полный комплект: почта и пароль.\n- Доступность смены почты и пароля, для безопасности советуем вам поставить 2FA защиту.\n> Гарантия на аккаунт первые 3 дня.\n\nСпешим напомнить! Срок жизни аккаунта зависит от ваших действий и правил сервиса. Мы не несем ответственности за блокировки, вызванные нарушением правил платформы после входа в аккаунт, гарантии подлежит только технические проблемы." }
+            ]
+        },
+        "Dota 2": { icon: "⚔️", subcategories: null, products: [{ id: "dota_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Discord": { icon: "🎙️", subcategories: null, products: [{ id: "discord_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Сигны": { icon: "💰", subcategories: null, products: [{ id: "signals_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Epic Games": { icon: "🎮", subcategories: null, products: [{ id: "epic_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Rockstar Games": { icon: "⭐", subcategories: null, products: [{ id: "rockstar_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Supercell": { icon: "🏰", subcategories: null, products: [{ id: "supercell_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Roblox": { icon: "🧸", subcategories: null, products: [{ id: "roblox_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Chat-GPT": { icon: "🤖", subcategories: null, products: [{ id: "chatgpt_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "Minecraft": { icon: "⛏️", subcategories: null, products: [{ id: "minecraft_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] },
+        "YouTube": { icon: "📺", subcategories: null, products: [{ id: "youtube_empty", name: "Нет в наличии", price: 0, description: "❌ Товары появятся скоро", empty: true }] }
+    };
+    
+    const categoryList = [
+        "Steam", "Telegram", "GTA V", "TikTok", "Counter-Strike 2", "Rust",
+        "Dota 2", "Discord", "Сигны", "Epic Games", "Rockstar Games", "Supercell",
+        "Roblox", "Chat-GPT", "Minecraft", "YouTube"
     ];
+    
+    // ==================== ФУНКЦИИ ====================
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function addToCart(product) {
+        if (product.empty) return;
+        const exist = cart.find(i => i.id === product.id);
+        if (exist) exist.qty++;
+        else cart.push({...product, qty: 1});
+        tg.showPopup({title: "Добавлено", message: `${product.name} в корзине`, buttons:[{type:"ok"}]});
+        if (currentTab === 'cart') renderCurrentTab();
+    }
     
     function loadFromStorage() {
         const savedChat = localStorage.getItem('auramarket_chat');
@@ -274,7 +422,6 @@
         }
     }
     
-    // Кастомное модальное окно для промокода
     function showPromoModal() {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
@@ -289,10 +436,8 @@
             </div>
         `;
         document.body.appendChild(modal);
-        
         const input = modal.querySelector('#promoInput');
         input.focus();
-        
         modal.querySelector('#promoConfirm').onclick = async () => {
             const code = input.value.trim().toUpperCase();
             if (!code) {
@@ -311,61 +456,144 @@
                 tg.showPopup({ title: "❌ Ошибка", message: result.error || "Промокод не найден", buttons: [{ type: "ok" }] });
             }
         };
-        
         modal.querySelector('#promoCancel').onclick = () => modal.remove();
-        
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') modal.querySelector('#promoConfirm').click();
-        });
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') modal.querySelector('#promoConfirm').click(); });
     }
     
-    function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        const text = input.value.trim();
-        if (!text) return;
-        
-        const message = {
-            id: Date.now(),
-            user_id: user.id,
-            username: user.username || user.first_name,
-            text: text,
-            date: new Date().toLocaleTimeString()
-        };
-        
-        chatMessages.push(message);
-        saveToStorage();
-        input.value = '';
-        renderChatMessages();
-    }
-    
-    function renderChatMessages() {
-        const container = document.getElementById('chatMessagesContainer');
-        if (!container) return;
-        if (chatMessages.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">Нет сообщений. Будь первым!</div>';
-            return;
+    // ==================== ОТРИСОВКА ====================
+    function renderMainCatalog() {
+        let html = '<div class="products-grid">';
+        for (let catName of categoryList) {
+            const cat = categories[catName];
+            html += `
+                <div class="product-card" onclick="openCategory('${catName}')">
+                    <div style="font-size: 40px;">${cat.icon}</div>
+                    <div style="font-size: 18px; font-weight: bold; margin-top: 8px;">${catName}</div>
+                </div>
+            `;
         }
-        container.innerHTML = chatMessages.map(msg => `
-            <div class="chat-message">
-                <strong>${escapeHtml(msg.username)}</strong> <span style="font-size:10px; color:#666;">${msg.date}</span><br>
-                ${escapeHtml(msg.text)}
-            </div>
-        `).join('');
-        container.scrollTop = container.scrollHeight;
+        html += '</div>';
+        return html;
     }
+    
+    window.openCategory = function(catName) {
+        catalogView = 'category';
+        currentCategory = catName;
+        renderCurrentTab();
+    };
+    
+    window.openSubcategory = function(subName) {
+        catalogView = 'subcategory';
+        currentSubcategory = subName;
+        renderCurrentTab();
+    };
+    
+    window.openProduct = function(productId, catName, subName) {
+        let product = null;
+        if (subName) {
+            product = categories[catName].products[subName].find(p => p.id === productId);
+        } else {
+            product = categories[catName].products.find(p => p.id === productId);
+        }
+        if (product) {
+            currentProduct = product;
+            catalogView = 'product';
+            renderCurrentTab();
+        }
+    };
+    
+    window.goBack = function() {
+        if (catalogView === 'product') {
+            if (currentSubcategory) {
+                catalogView = 'subcategory';
+            } else {
+                catalogView = 'category';
+            }
+            currentProduct = null;
+            renderCurrentTab();
+        } else if (catalogView === 'subcategory') {
+            catalogView = 'category';
+            currentSubcategory = null;
+            renderCurrentTab();
+        } else if (catalogView === 'category') {
+            catalogView = 'main';
+            currentCategory = null;
+            renderCurrentTab();
+        }
+    };
+    
+    function renderCategoryView() {
+        const cat = categories[currentCategory];
+        if (!cat) return '<div class="empty-stock">Категория не найдена</div>';
+        
+        if (cat.subcategories) {
+            // Есть подкатегории
+            let html = `<button class="back-btn" onclick="goBack()">← Назад</button>`;
+            html += `<div class="category-header"><span class="category-icon">${cat.icon}</span><span class="category-title">${currentCategory}</span></div>`;
+            html += `<div class="subcategory-grid">`;
+            for (let sub of cat.subcategories) {
+                html += `<div class="subcategory-btn" onclick="openSubcategory('${sub}')">${sub}</div>`;
+            }
+            html += `</div>`;
+            return html;
+        } else {
+            // Нет подкатегорий, сразу товары
+            let productsList = cat.products;
+            let html = `<button class="back-btn" onclick="goBack()">← Назад</button>`;
+            html += `<div class="category-header"><span class="category-icon">${cat.icon}</span><span class="category-title">${currentCategory}</span></div>`;
+            html += `<div class="products-grid">`;
+            for (let p of productsList) {
+                if (p.empty) {
+                    html += `<div class="product-card" style="opacity:0.7;"><div>📦</div><strong>${p.name}</strong><div class="price">${p.price === 0 ? 'Нет в наличии' : p.price + ' ₽'}</div></div>`;
+                } else {
+                    html += `<div class="product-card" onclick="openProduct('${p.id}', '${currentCategory}', null)"><div>🎮</div><strong>${p.name}</strong><div class="price">${p.price} ₽</div></div>`;
+                }
+            }
+            html += `</div>`;
+            return html;
+        }
+    }
+    
+    function renderSubcategoryView() {
+        const cat = categories[currentCategory];
+        const productsList = cat.products[currentSubcategory];
+        if (!productsList) return '<div class="empty-stock">Нет товаров</div>';
+        
+        let html = `<button class="back-btn" onclick="goBack()">← Назад</button>`;
+        html += `<div class="category-header"><span class="category-icon">${cat.icon}</span><span class="category-title">${currentCategory} / ${currentSubcategory}</span></div>`;
+        html += `<div class="products-grid">`;
+        for (let p of productsList) {
+            if (p.empty) {
+                html += `<div class="product-card" style="opacity:0.7;"><div>📦</div><strong>${p.name}</strong><div class="price">${p.price === 0 ? 'Нет в наличии' : p.price + ' ₽'}</div></div>`;
+            } else {
+                html += `<div class="product-card" onclick="openProduct('${p.id}', '${currentCategory}', '${currentSubcategory}')"><div>🎮</div><strong>${p.name}</strong><div class="price">${p.price} ₽</div></div>`;
+            }
+        }
+        html += `</div>`;
+        return html;
+    }
+    
+    function renderProductView() {
+        let html = `<button class="back-btn" onclick="goBack()">← Назад</button>`;
+        html += `<div class="product-detail">`;
+        html += `<h2>${escapeHtml(currentProduct.name)}</h2>`;
+        html += `<div class="price">${currentProduct.price} ₽</div>`;
+        html += `<div class="description">${escapeHtml(currentProduct.description).replace(/\n/g, '<br>')}</div>`;
+        html += `<button class="btn-primary" onclick="addToCartFromDetail()">🛒 Добавить в корзину</button>`;
+        html += `</div>`;
+        return html;
+    }
+    
+    window.addToCartFromDetail = function() {
+        addToCart(currentProduct);
+    };
     
     function renderCatalog() {
-        let filtered = currentCategory === 'all' ? products : products.filter(p => p.category === currentCategory);
-        let chips = Array.from(categories).map(cat => `<span class="category-chip ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'Все' : cat}</span>`).join('');
-        let productsHtml = filtered.map(p => `
-            <div class="product-card">
-                <div style="font-size:24px;">${p.emoji}</div>
-                <strong>${escapeHtml(p.name)}</strong>
-                <div class="price">${p.price} ₽</div>
-                <button class="add-to-cart" data-id="${p.id}" data-name="${escapeHtml(p.name)}" data-price="${p.price}">🛒 В корзину</button>
-            </div>
-        `).join('');
-        return `<div class="categories">${chips}</div><div class="products-grid">${productsHtml}</div>`;
+        if (catalogView === 'main') return renderMainCatalog();
+        else if (catalogView === 'category') return renderCategoryView();
+        else if (catalogView === 'subcategory') return renderSubcategoryView();
+        else if (catalogView === 'product') return renderProductView();
+        return '<div class="empty-stock">Ошибка</div>';
     }
     
     function renderProfile() {
@@ -433,6 +661,39 @@
         `;
     }
     
+    function renderChatMessages() {
+        const container = document.getElementById('chatMessagesContainer');
+        if (!container) return;
+        if (chatMessages.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">Нет сообщений. Будь первым!</div>';
+            return;
+        }
+        container.innerHTML = chatMessages.map(msg => `
+            <div class="chat-message">
+                <strong>${escapeHtml(msg.username)}</strong> <span style="font-size:10px; color:#666;">${msg.date}</span><br>
+                ${escapeHtml(msg.text)}
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        const message = {
+            id: Date.now(),
+            user_id: user.id,
+            username: user.username || user.first_name,
+            text: text,
+            date: new Date().toLocaleTimeString()
+        };
+        chatMessages.push(message);
+        saveToStorage();
+        input.value = '';
+        renderChatMessages();
+    }
+    
     function renderCurrentTab() {
         const container = document.getElementById('content');
         if (currentTab === 'catalog') container.innerHTML = renderCatalog();
@@ -440,30 +701,6 @@
         else if (currentTab === 'cart') container.innerHTML = renderCart();
         else if (currentTab === 'faq') container.innerHTML = renderFaq();
         else if (currentTab === 'chat') container.innerHTML = renderChat();
-        
-        if (currentTab === 'catalog') {
-            document.querySelectorAll('.add-to-cart').forEach(btn => {
-                btn.onclick = () => {
-                    const id = parseInt(btn.dataset.id);
-                    const name = btn.dataset.name;
-                    const price = parseInt(btn.dataset.price);
-                    const exist = cart.find(i => i.id === id);
-                    if (exist) exist.qty++;
-                    else cart.push({id, name, price, qty: 1});
-                    tg.showPopup({title: "Добавлено", message: `${name} в корзине`, buttons:[{type:"ok"}]});
-                };
-            });
-            document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.onclick = () => {
-                    currentCategory = chip.dataset.cat;
-                    renderCurrentTab();
-                };
-            });
-        }
-        
-        if (currentTab === 'profile') {
-            document.getElementById('activatePromoBtn')?.addEventListener('click', showPromoModal);
-        }
         
         if (currentTab === 'cart') {
             document.querySelectorAll('.del-cart').forEach(btn => {
@@ -493,6 +730,10 @@
             document.getElementById('rulesBtn')?.addEventListener('click', () => window.open('https://auramarketpravila.tilda.ws/auramarketpravila', '_blank'));
         }
         
+        if (currentTab === 'profile') {
+            document.getElementById('activatePromoBtn')?.addEventListener('click', showPromoModal);
+        }
+        
         if (currentTab === 'chat') {
             renderChatMessages();
             document.getElementById('chatSendBtn')?.addEventListener('click', sendChatMessage);
@@ -502,24 +743,19 @@
         }
     }
     
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-    
-    categories.add('all');
-    products.forEach(p => categories.add(p.category));
-    
+    // Инициализация
     loadFromStorage();
     
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.onclick = () => {
             currentTab = btn.dataset.tab;
+            // Сбрасываем навигацию каталога при переключении на другую вкладку
+            if (currentTab !== 'catalog') {
+                catalogView = 'main';
+                currentCategory = null;
+                currentSubcategory = null;
+                currentProduct = null;
+            }
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             renderCurrentTab();
