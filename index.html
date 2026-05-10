@@ -3,51 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тест</title>
+    <title>AuraMarket</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { background: #0a0a0f; color: white; font-family: system-ui; padding: 20px; }
-        button { background: #b300ff; border: none; padding: 15px; margin: 10px 0; border-radius: 16px; color: white; font-size: 16px; cursor: pointer; width: 100%; }
+        button { background: #b300ff; border: none; padding: 15px; margin: 10px 0; border-radius: 16px; color: white; font-size: 16px; width: 100%; cursor: pointer; }
         input { width: 100%; padding: 10px; margin: 8px 0; background: #1a1a2e; border: 1px solid #b300ff; border-radius: 12px; color: white; }
         .result { margin-top: 20px; padding: 10px; background: #1a1a2e; border-radius: 12px; }
     </style>
 </head>
 <body>
-    <h1>Тест Mini App</h1>
-    
+    <h1>🛒 AuraMarket</h1>
+    <h2>Добавить товар</h2>
     <input type="text" id="name" placeholder="Название">
     <input type="number" id="price" placeholder="Цена">
     <input type="text" id="cat" placeholder="Категория">
-    
-    <button id="send">ОТПРАВИТЬ ТОВАР</button>
-    
-    <div class="result" id="result">Ожидание...</div>
+    <button id="sendBtn">💾 СОХРАНИТЬ</button>
+    <div class="result" id="result">Готов к работе</div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        async function sendData() {
+        async function addProduct() {
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            const category = document.getElementById('cat').value;
+            
+            if (!name || !price || !category) {
+                document.getElementById('result').innerHTML = '❌ Заполни все поля!';
+                return;
+            }
+            
             const data = {
                 action: 'add_product',
-                name: document.getElementById('name').value,
-                price: parseInt(document.getElementById('price').value),
-                category: document.getElementById('cat').value
+                name: name,
+                price: parseInt(price),
+                category: category
             };
             
-            document.getElementById('result').innerHTML = 'Отправляю...';
+            document.getElementById('result').innerHTML = '⏳ Отправляю...';
             
             try {
                 const response = await tg.sendData(JSON.stringify(data));
-                document.getElementById('result').innerHTML = '✅ Ответ бота: ' + response;
                 console.log('Ответ:', response);
+                document.getElementById('result').innerHTML = '✅ Ответ: ' + response;
+                
+                if (response.includes('success')) {
+                    document.getElementById('name').value = '';
+                    document.getElementById('price').value = '';
+                    document.getElementById('cat').value = '';
+                }
             } catch(e) {
                 document.getElementById('result').innerHTML = '❌ Ошибка: ' + e.message;
-                console.error(e);
             }
         }
         
-        document.getElementById('send').onclick = sendData;
+        document.getElementById('sendBtn').onclick = addProduct;
     </script>
 </body>
 </html>
