@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>AuraMarket | Каталог</title>
+    <title>AuraMarket | Магазин</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -11,74 +11,486 @@
             background: radial-gradient(circle at 20% 30%, #0a0a0f, #030308);
             font-family: 'Montserrat', system-ui;
             color: white;
-            padding: 20px;
-            padding-bottom: 30px;
+            min-height: 100vh;
+            padding-bottom: 80px;
         }
-        .card {
+        .glass-card {
             background: rgba(20,20,40,0.65);
             backdrop-filter: blur(16px);
-            border-radius: 28px;
+            border-radius: 32px;
             padding: 20px;
-            margin: 12px 0;
+            margin: 16px;
             border: 1px solid rgba(179,0,255,0.35);
         }
-        .price { color: #b300ff; font-size: 20px; font-weight: bold; }
-        .category { font-size: 12px; color: #aaa; margin-top: 5px; }
-        .empty { text-align: center; padding: 40px; color: #aaa; }
-        .logo { text-align: center; margin-bottom: 20px; }
-        .logo span { font-size: 42px; font-weight: 900; background: linear-gradient(145deg, #fff, #b300ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .loading { text-align: center; padding: 40px; color: #b300ff; }
+        .btn-primary {
+            background: linear-gradient(90deg, #b300ff, #6a00ff);
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        .btn-secondary {
+            background: #2a2a3a;
+            border: 1px solid rgba(179,0,255,0.3);
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            padding: 10px;
+        }
+        .product-card {
+            background: rgba(25,25,50,0.7);
+            border-radius: 28px;
+            padding: 16px;
+            border: 1px solid rgba(179,0,255,0.25);
+        }
+        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(179,0,255,0.2); }
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(8,8,16,0.96); backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around; padding: 8px 16px 22px;
+            border-top: 1px solid #b300ff;
+        }
+        .nav-item {
+            background: transparent; border: none; color: #aaa; font-size: 12px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            cursor: pointer; padding: 6px 12px; border-radius: 40px;
+        }
+        .nav-item.active { color: #b300ff; background: rgba(179,0,255,0.15); }
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .logo-letters {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+        }
+        .logo-letter {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(145deg, #fff, #b300ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -5px;
+        }
+        .logo-sub {
+            font-size: 12px;
+            color: #b300ff;
+            margin-top: -8px;
+        }
+        .products-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .product-item {
+            background: rgba(25,25,50,0.7);
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid rgba(179,0,255,0.25);
+        }
+        .price {
+            color: #b300ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .chat-messages {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            padding-right: 8px;
+        }
+        .chat-message {
+            background: rgba(179,0,255,0.1);
+            border-radius: 16px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .chat-message strong {
+            color: #b300ff;
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            background: #1a1a2e;
+            border: 1px solid #b300ff;
+            border-radius: 24px;
+            color: white;
+            font-size: 14px;
+        }
+        .chat-send {
+            background: #b300ff;
+            border: none;
+            border-radius: 24px;
+            padding: 0 18px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .hidden { display: none; }
+        .category-chip {
+            background: rgba(179,0,255,0.2);
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 5px;
+        }
+        .category-chip.active { background: #b300ff; color: white; }
+        .categories { text-align: center; margin: 10px 0; }
+        .promo-input {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a2e;
+            border: 1px solid #b300ff;
+            border-radius: 16px;
+            color: white;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
-    <div class="logo">
-        <span>AuraMarket</span>
-        <div style="font-size:12px; color:#b300ff;">Каталог товаров</div>
-    </div>
-    
-    <div id="products" class="loading">⏳ Загрузка...</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        // ===== ТВОИ ТОВАРЫ (ДОБАВЛЯЙ СЮДА ЧЕРЕЗ РЕДАКТОР) =====
-        const products = [
-            { name: "Telegram Premium 1 месяц", price: 129, category: "Premium", description: "Аккаунт с подпиской Premium" },
-            { name: "Ключ Windows 11 Pro", price: 149, category: "Ключи", description: "Лицензионный ключ" },
-            { name: "TikTok USA аккаунт", price: 89, category: "Аккаунты", description: "Аккаунт с регионом USA" },
-            { name: "Накрутка TikTok 1000", price: 79, category: "Накрутка", description: "1000 подписчиков" }
-        ];
-        // ======================================================
-        
-        function showProducts() {
-            const container = document.getElementById('products');
-            if (products.length === 0) {
-                container.innerHTML = '<div class="empty">❌ Нет товаров в каталоге</div>';
-                return;
+<div class="glass-card" style="text-align:center; padding-bottom: 15px;">
+    <div class="logo">
+        <div class="logo-letters">
+            <span class="logo-letter">A</span><span class="logo-letter" style="margin-left:-8px;">M</span>
+        </div>
+        <div class="logo-sub">🚀 Ваш выбор в сфере цифровых товаров</div>
+    </div>
+</div>
+
+<div id="content"></div>
+
+<div class="bottom-nav">
+    <button class="nav-item" data-tab="catalog"><span>🛍️</span><span>Каталог</span></button>
+    <button class="nav-item" data-tab="profile"><span>👤</span><span>Профиль</span></button>
+    <button class="nav-item" data-tab="cart"><span>🛒</span><span>Корзина</span></button>
+    <button class="nav-item" data-tab="faq"><span>❓</span><span>FAQ</span></button>
+    <button class="nav-item" data-tab="chat"><span>👥</span><span>Чат</span></button>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    const user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
+    
+    // Данные пользователя
+    let balance = 0;
+    let totalOrders = 0;
+    let activeOrders = 0;
+    let pendingOrders = 0;
+    let promoCount = 0;
+    
+    let cart = [];
+    let allProducts = [];
+    let currentCategory = 'all';
+    let categories = new Set();
+    let currentTab = 'catalog';
+    let chatMessages = [];
+    
+    // === ТОВАРЫ (можно управлять через GitHub) ===
+    const products = [
+        { id: 1, name: "Telegram Premium 1 мес", price: 129, category: "premium", emoji: "💎" },
+        { id: 2, name: "Ключ Windows 11 Pro", price: 149, category: "keys", emoji: "🔑" },
+        { id: 3, name: "TikTok USA аккаунт", price: 89, category: "accounts", emoji: "📱" },
+        { id: 4, name: "Накрутка TikTok 1000", price: 79, category: "boost", emoji: "📈" },
+        { id: 5, name: "ChatGPT Plus", price: 199, category: "premium", emoji: "🤖" },
+        { id: 6, name: "Discord Nitro месяц", price: 299, category: "premium", emoji: "🎮" },
+        { id: 7, name: "Steam ключ", price: 99, category: "keys", emoji: "🎲" },
+        { id: 8, name: "Instagram 1000 лайков", price: 59, category: "boost", emoji: "❤️" }
+    ];
+    
+    // Загружаем данные из localStorage (сохраняем историю чата)
+    function loadFromStorage() {
+        const savedChat = localStorage.getItem('auramarket_chat');
+        if (savedChat) {
+            chatMessages = JSON.parse(savedChat);
+        }
+        const savedBalance = localStorage.getItem('auramarket_balance');
+        if (savedBalance) balance = parseInt(savedBalance);
+        const savedOrders = localStorage.getItem('auramarket_orders');
+        if (savedOrders) totalOrders = parseInt(savedOrders);
+        const savedPromoCount = localStorage.getItem('auramarket_promo_count');
+        if (savedPromoCount) promoCount = parseInt(savedPromoCount);
+    }
+    
+    function saveToStorage() {
+        localStorage.setItem('auramarket_chat', JSON.stringify(chatMessages));
+        localStorage.setItem('auramarket_balance', balance);
+        localStorage.setItem('auramarket_orders', totalOrders);
+        localStorage.setItem('auramarket_promo_count', promoCount);
+    }
+    
+    // Отправка запроса к боту
+    async function sendRequest(action, data = {}) {
+        data.action = action;
+        try {
+            const response = await tg.sendData(JSON.stringify(data));
+            return JSON.parse(response);
+        } catch(e) {
+            return {};
+        }
+    }
+    
+    // Активация промокода
+    async function activatePromo() {
+        tg.showPopup({
+            title: "💎 Активация промокода",
+            message: "Введите промокод:",
+            buttons: [{ type: "ok", text: "✅ Активировать" }, { type: "cancel", text: "❌ Отмена" }]
+        }, async (btn) => {
+            if (btn === 'ok') {
+                tg.showPopup({
+                    title: "💎 Ввод промокода",
+                    message: "Напишите код в поле ниже:",
+                    type: "prompt"
+                }, async (text) => {
+                    if (text && text.trim()) {
+                        const result = await sendRequest('activate_promo', { code: text.trim().toUpperCase() });
+                        if (result.success) {
+                            balance += result.reward;
+                            promoCount++;
+                            saveToStorage();
+                            tg.showPopup({ title: "✅ Успех", message: `Промокод активирован! +${result.reward}₽`, buttons: [{ type: "ok" }] });
+                            renderCurrentTab();
+                        } else {
+                            tg.showPopup({ title: "❌ Ошибка", message: result.error || "Промокод не найден", buttons: [{ type: "ok" }] });
+                        }
+                    }
+                });
             }
-            
-            container.innerHTML = products.map(p => `
-                <div class="card">
-                    <div style="font-size:18px; font-weight:bold;">${escapeHtml(p.name)}</div>
-                    <div class="price">💰 ${p.price} ₽</div>
-                    <div class="category">📁 ${escapeHtml(p.category)}</div>
-                    <div style="font-size:12px; margin-top:8px;">${escapeHtml(p.description)}</div>
-                </div>
-            `).join('');
+        });
+    }
+    
+    // Отправка сообщения в чат
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        
+        const message = {
+            id: Date.now(),
+            user_id: user.id,
+            username: user.username || user.first_name,
+            text: text,
+            date: new Date().toLocaleTimeString()
+        };
+        
+        chatMessages.push(message);
+        saveToStorage();
+        input.value = '';
+        renderChatMessages();
+    }
+    
+    function renderChatMessages() {
+        const container = document.getElementById('chatMessagesContainer');
+        if (!container) return;
+        
+        if (chatMessages.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">Нет сообщений. Будь первым!</div>';
+            return;
         }
         
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
+        container.innerHTML = chatMessages.map(msg => `
+            <div class="chat-message">
+                <strong>${escapeHtml(msg.username)}</strong> <span style="font-size:10px; color:#666;">${msg.date}</span><br>
+                ${escapeHtml(msg.text)}
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function renderCatalog() {
+        let filtered = currentCategory === 'all' ? products : products.filter(p => p.category === currentCategory);
+        let chips = Array.from(categories).map(cat => `<span class="category-chip ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'Все' : cat}</span>`).join('');
+        let productsHtml = filtered.map(p => `
+            <div class="product-card">
+                <div style="font-size:24px;">${p.emoji}</div>
+                <strong>${escapeHtml(p.name)}</strong>
+                <div class="price">${p.price} ₽</div>
+                <button class="add-to-cart" data-id="${p.id}" data-name="${escapeHtml(p.name)}" data-price="${p.price}">🛒 В корзину</button>
+            </div>
+        `).join('');
+        return `<div class="categories">${chips}</div><div class="products-grid">${productsHtml}</div>`;
+    }
+    
+    function renderProfile() {
+        return `
+            <div class="glass-card" style="text-align:center;">
+                <div style="font-size:56px;">👤</div>
+                <h2>${escapeHtml(user.first_name)}</h2>
+                <div style="color:#aaa; margin-bottom:15px;">@${user.username || 'user'}</div>
+                
+                <div class="stat-row"><span>💰 Баланс</span><span class="price">${balance} ₽</span></div>
+                <div class="stat-row"><span>📦 Всего заказов</span><span>${totalOrders}</span></div>
+                <div class="stat-row"><span>|— Активных</span><span>${activeOrders}</span></div>
+                <div class="stat-row"><span>|— На обработке</span><span>${pendingOrders}</span></div>
+                <div class="stat-row"><span>💎 Активировано промокодов</span><span>${promoCount}</span></div>
+                
+                <button class="btn-primary" id="activatePromoBtn">💎 Активировать промокод</button>
+            </div>
+        `;
+    }
+    
+    function renderCart() {
+        if (cart.length === 0) return `<div class="glass-card" style="text-align:center">🛒 Корзина пуста</div>`;
+        let total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+        return `<div class="glass-card">
+            ${cart.map(i => `
+                <div class="stat-row">
+                    <span>${escapeHtml(i.name)} x${i.qty}</span>
+                    <span>${i.price * i.qty} ₽</span>
+                    <button class="del-cart" data-id="${i.id}">❌</button>
+                </div>
+            `).join('')}
+            <div class="stat-row"><strong>Итого</strong><strong>${total} ₽</strong></div>
+            <button class="btn-primary" id="orderBtn">💳 Оформить заказ</button>
+        </div>`;
+    }
+    
+    function renderFaq() {
+        return `
+            <div class="glass-card">
+                <h3>📌 FAQ — часто задаваемые вопросы</h3><br>
+                <p><strong>1️⃣ Как быстро я получу товар?</strong><br>⚡️ Моментально. Сразу после подтверждения оплаты данные от аккаунта (логин:пароль) придут Вам в чат.</p><br>
+                <p><strong>2️⃣ Есть ли гарантия на аккаунты?</strong><br>🛡 Да. Мы гарантируем валидность аккаунта на момент покупки. Если аккаунт не работает сразу — мы сделаем замену. Важно: записывайте видео с момента покупки.</p><br>
+                <p><strong>3️⃣ Что делать, если аккаунт перестал работать через время?</strong><br>🚀 Срок жизни аккаунта зависит от ваших действий. Мы не несём ответственности за блокировки после входа.</p><br>
+                <p><strong>4️⃣ Как правильно заходить в Telegram аккаунт?</strong><br>💡 Используйте качественные прокси/VPN той страны, на которую реган аккаунт. Заходите через инкогнито. Не меняйте все данные в первую минуту.</p><br>
+                <p><strong>5️⃣ Какие способы оплаты доступны?</strong><br>💳 Мы принимаем оплату на РФ карты, @send, tonkeeper, telegram stars.</p><br>
+                <p><strong>6️⃣ Куда писать, если возникла проблема?</strong><br>📞 Пишите тикет админам в разделе "Тех.поддержка" в боте.</p>
+            </div>
+            <div class="glass-card">
+                <button class="btn-primary btn-secondary" id="rulesBtn">📝 Правила и пользовательское соглашение</button>
+                <button class="btn-primary btn-secondary" id="supportBtn">📞 Техническая поддержка</button>
+            </div>
+        `;
+    }
+    
+    function renderChat() {
+        return `
+            <div class="glass-card">
+                <h3>👥 Общий чат</h3>
+                <div id="chatMessagesContainer" class="chat-messages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Напишите сообщение...">
+                    <button id="chatSendBtn" class="chat-send">📤</button>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderCurrentTab() {
+        const container = document.getElementById('content');
+        if (currentTab === 'catalog') container.innerHTML = renderCatalog();
+        else if (currentTab === 'profile') container.innerHTML = renderProfile();
+        else if (currentTab === 'cart') container.innerHTML = renderCart();
+        else if (currentTab === 'faq') container.innerHTML = renderFaq();
+        else if (currentTab === 'chat') container.innerHTML = renderChat();
+        
+        if (currentTab === 'catalog') {
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.onclick = () => {
+                    const id = parseInt(btn.dataset.id);
+                    const name = btn.dataset.name;
+                    const price = parseInt(btn.dataset.price);
+                    const exist = cart.find(i => i.id === id);
+                    if (exist) exist.qty++;
+                    else cart.push({id, name, price, qty: 1});
+                    tg.showPopup({title: "Добавлено", message: `${name} в корзине`, buttons:[{type:"ok"}]});
+                };
+            });
+            document.querySelectorAll('.category-chip').forEach(chip => {
+                chip.onclick = () => {
+                    currentCategory = chip.dataset.cat;
+                    renderCurrentTab();
+                };
             });
         }
         
-        showProducts();
-    </script>
+        if (currentTab === 'profile') {
+            document.getElementById('activatePromoBtn')?.addEventListener('click', activatePromo);
+        }
+        
+        if (currentTab === 'cart') {
+            document.querySelectorAll('.del-cart').forEach(btn => {
+                btn.onclick = () => {
+                    cart = cart.filter(i => i.id !== parseInt(btn.dataset.id));
+                    renderCurrentTab();
+                };
+            });
+            document.getElementById('orderBtn')?.addEventListener('click', async () => {
+                const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+                if (balance >= total) {
+                    balance -= total;
+                    totalOrders++;
+                    activeOrders++;
+                    cart = [];
+                    saveToStorage();
+                    renderCurrentTab();
+                    tg.showPopup({title: "✅ Успех", message: "Заказ оформлен! Товары выданы в боте.", buttons:[{type:"ok"}]});
+                } else {
+                    tg.showPopup({title: "❌ Ошибка", message: "Недостаточно средств", buttons:[{type:"ok"}]});
+                }
+            });
+        }
+        
+        if (currentTab === 'faq') {
+            document.getElementById('supportBtn')?.addEventListener('click', () => window.open('https://t.me/MarketAura_bot?start=support'));
+            document.getElementById('rulesBtn')?.addEventListener('click', () => window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank'));
+        }
+        
+        if (currentTab === 'chat') {
+            renderChatMessages();
+            document.getElementById('chatSendBtn')?.addEventListener('click', sendChatMessage);
+            document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+        }
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Инициализация категорий
+    categories.add('all');
+    products.forEach(p => categories.add(p.category));
+    
+    // Загрузка данных
+    loadFromStorage();
+    
+    // Навигация
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.onclick = () => {
+            currentTab = btn.dataset.tab;
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCurrentTab();
+        };
+    });
+    
+    renderCurrentTab();
+</script>
 </body>
 </html>
