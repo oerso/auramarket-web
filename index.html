@@ -33,92 +33,38 @@
             cursor: pointer;
             margin: 5px 0;
         }
-        .btn-danger {
-            background: linear-gradient(90deg, #ff3b3b, #cc0000);
-        }
-        .btn-secondary {
-            background: #2a2a3a;
-        }
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-            padding: 10px;
-        }
-        .product-card {
-            background: rgba(25,25,50,0.7);
-            border-radius: 28px;
-            padding: 16px;
-            border: 1px solid rgba(179,0,255,0.25);
-        }
+        .btn-danger { background: linear-gradient(90deg, #ff3b3b, #cc0000); }
+        .btn-secondary { background: #2a2a3a; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 10px; }
+        .product-card { background: rgba(25,25,50,0.7); border-radius: 28px; padding: 16px; border: 1px solid rgba(179,0,255,0.25); }
         .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(179,0,255,0.2); }
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(8,8,16,0.96);
-            backdrop-filter: blur(20px);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 16px 22px;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(8,8,16,0.96); backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around; padding: 8px 16px 22px;
             border-top: 1px solid #b300ff;
         }
         .nav-item {
-            background: transparent;
-            border: none;
-            color: #aaa;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 40px;
+            background: transparent; border: none; color: #aaa; font-size: 12px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            cursor: pointer; padding: 6px 12px; border-radius: 40px;
         }
         .nav-item.active { color: #b300ff; background: rgba(179,0,255,0.15); }
         .logo-3d {
             width: 70px; height: 70px;
             background: linear-gradient(135deg, #1e0b32, #0a0a0f);
-            border-radius: 28px;
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
+            border-radius: 28px; margin: 0 auto 10px;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
         }
         .logo-letter { font-size: 42px; font-weight: 900; background: linear-gradient(145deg, #fff, #b300ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .category-chip {
-            background: rgba(179,0,255,0.2);
-            border-radius: 30px;
-            padding: 6px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            display: inline-block;
-            margin: 5px;
+            background: rgba(179,0,255,0.2); border-radius: 30px; padding: 6px 16px;
+            font-size: 14px; cursor: pointer; display: inline-block; margin: 5px;
         }
         .category-chip.active { background: #b300ff; color: white; }
         .categories { text-align: center; margin: 10px 0; }
-        .admin-badge {
-            background: #b300ff;
-            color: white;
-            padding: 8px;
-            border-radius: 20px;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            background: #1a1a2e;
-            border: 1px solid #b300ff;
-            border-radius: 16px;
-            color: white;
-            font-size: 16px;
-        }
+        .admin-badge { background: #b300ff; color: white; padding: 8px; border-radius: 20px; text-align: center; font-weight: bold; margin-bottom: 10px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #1a1a2e; border: 1px solid #b300ff; border-radius: 16px; color: white; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -155,11 +101,15 @@
     
     async function sendRequest(action, data = {}) {
         data.action = action;
+        console.log("📤 Отправляю:", data);
+        alert("Отправляю действие: " + action);
         const response = await tg.sendData(JSON.stringify(data));
+        console.log("📥 Ответ:", response);
+        alert("Ответ: " + response);
         try { 
             return JSON.parse(response); 
         } catch(e) { 
-            console.log("Ошибка парсинга:", e);
+            console.error("Ошибка парсинга:", e);
             return {}; 
         }
     }
@@ -177,9 +127,17 @@
             allProducts.forEach(p => categories.add(p.category));
             renderCurrentTab();
             console.log("Загружено товаров:", allProducts.length);
-        } catch(e) {
-            console.log("Ошибка загрузки:", e);
-        }
+        } catch(e) { console.log("Ошибка загрузки:", e); }
+    }
+    
+    function escapeHtml(str) { 
+        if(!str) return '';
+        return str.replace(/[&<>]/g, function(m){
+            if(m==='&') return '&amp;';
+            if(m==='<') return '&lt;';
+            if(m==='>') return '&gt;';
+            return m;
+        });
     }
     
     function renderCatalog() {
@@ -192,17 +150,7 @@
                 <button class="add-to-cart" data-id="${p.id}" data-name="${escapeHtml(p.name)}" data-price="${p.price}">В корзину</button>
             </div>
         `).join('');
-        return `<div class="categories">${chips}</div><div class="products-grid" id="productsGrid">${productsHtml}</div>`;
-    }
-    
-    function escapeHtml(str) { 
-        if(!str) return '';
-        return str.replace(/[&<>]/g, function(m){
-            if(m==='&') return '&amp;';
-            if(m==='<') return '&lt;';
-            if(m==='>') return '&gt;';
-            return m;
-        });
+        return `<div class="categories">${chips}</div><div class="products-grid">${productsHtml}</div>`;
     }
     
     function renderProfile() {
@@ -239,7 +187,6 @@
         return `<div class="glass-card"><h3>🔍 Частые вопросы</h3><p>⚡ Мгновенная выдача</p><p>🛡 Гарантия 30 дней</p><p>💳 Оплата: карты, крипта, Stars</p></div>`;
     }
     
-    // ==================== АДМИНКА ====================
     function renderAdmin() {
         if (!isAdmin) return `<div class="glass-card">⛔ У вас нет доступа к админ-панели.</div>`;
         return `
@@ -267,30 +214,26 @@
                 <button class="btn-primary btn-secondary" id="cancelAdminBtn">Отмена</button>
             </div>
         `;
-        const saveBtn = document.getElementById('saveProductBtn');
-        if(saveBtn) {
-            saveBtn.onclick = async function() {
-                const name = document.getElementById('prodName').value;
-                const price = parseInt(document.getElementById('prodPrice').value);
-                const category = document.getElementById('prodCategory').value;
-                const description = document.getElementById('prodDesc').value;
-                const photo_url = document.getElementById('prodPhoto').value;
-                if (!name || !price || !category) {
-                    tg.showPopup({title: "Ошибка", message: "Заполните название, цену и категорию!", buttons:[{type:"ok"}]});
-                    return;
-                }
-                const result = await sendRequest('add_product', {name, price, category, description, photo_url});
-                if(result.success) {
-                    tg.showPopup({title: "Успех", message: "Товар добавлен!", buttons:[{type:"ok"}]});
-                    await loadData();
-                    showProductList();
-                } else {
-                    tg.showPopup({title: "Ошибка", message: "Не удалось добавить товар", buttons:[{type:"ok"}]});
-                }
-            };
-        }
-        const cancelBtn = document.getElementById('cancelAdminBtn');
-        if(cancelBtn) cancelBtn.onclick = () => renderAdminContent();
+        document.getElementById('saveProductBtn').onclick = async function() {
+            const name = document.getElementById('prodName').value;
+            const price = parseInt(document.getElementById('prodPrice').value);
+            const category = document.getElementById('prodCategory').value;
+            const description = document.getElementById('prodDesc').value;
+            const photo_url = document.getElementById('prodPhoto').value;
+            if (!name || !price || !category) {
+                tg.showPopup({title: "Ошибка", message: "Заполните название, цену и категорию!", buttons:[{type:"ok"}]});
+                return;
+            }
+            const result = await sendRequest('add_product', {name, price, category, description, photo_url});
+            if(result.success) {
+                tg.showPopup({title: "Успех", message: "Товар добавлен!", buttons:[{type:"ok"}]});
+                await loadData();
+                showProductList();
+            } else {
+                tg.showPopup({title: "Ошибка", message: result.error || "Не удалось добавить товар", buttons:[{type:"ok"}]});
+            }
+        };
+        document.getElementById('cancelAdminBtn').onclick = () => renderAdminContent();
     }
     
     async function showProductList() {
@@ -310,20 +253,13 @@
         }
         html += `<button class="btn-primary btn-secondary" id="backAdminBtn">🔙 Назад</button></div>`;
         document.getElementById('adminContent').innerHTML = html;
-        
-        document.querySelectorAll('.edit-product').forEach(btn => {
-            btn.onclick = () => editProductById(parseInt(btn.dataset.id));
-        });
-        document.querySelectorAll('.delete-product').forEach(btn => {
-            btn.onclick = () => deleteProductById(parseInt(btn.dataset.id));
-        });
-        const backBtn = document.getElementById('backAdminBtn');
-        if(backBtn) backBtn.onclick = () => renderAdminContent();
+        document.querySelectorAll('.edit-product').forEach(btn => btn.onclick = () => editProductById(parseInt(btn.dataset.id)));
+        document.querySelectorAll('.delete-product').forEach(btn => btn.onclick = () => deleteProductById(parseInt(btn.dataset.id)));
+        document.getElementById('backAdminBtn').onclick = () => renderAdminContent();
     }
     
     async function editProductById(id) {
         let product = allProducts.find(p => p.id === id);
-        if(!product) return;
         document.getElementById('adminContent').innerHTML = `
             <div class="glass-card">
                 <h3>✏️ Редактировать: ${escapeHtml(product.name)}</h3>
@@ -337,22 +273,18 @@
                 <button class="btn-primary btn-secondary" id="cancelProductBtn">Отмена</button>
             </div>
         `;
-        const updateBtn = document.getElementById('updateProductBtn');
-        if(updateBtn) {
-            updateBtn.onclick = async () => {
-                let name = document.getElementById('editName').value;
-                let price = parseInt(document.getElementById('editPrice').value);
-                let category = document.getElementById('editCategory').value;
-                let description = document.getElementById('editDesc').value;
-                let photo_url = document.getElementById('editPhoto').value;
-                let is_active = document.getElementById('editActive').checked ? 1 : 0;
-                await sendRequest('update_product', {product_id: id, name, price, category, description, photo_url, is_active});
-                await loadData();
-                showProductList();
-            };
-        }
-        const cancelBtn = document.getElementById('cancelProductBtn');
-        if(cancelBtn) cancelBtn.onclick = () => showProductList();
+        document.getElementById('updateProductBtn').onclick = async () => {
+            let name = document.getElementById('editName').value;
+            let price = parseInt(document.getElementById('editPrice').value);
+            let category = document.getElementById('editCategory').value;
+            let description = document.getElementById('editDesc').value;
+            let photo_url = document.getElementById('editPhoto').value;
+            let is_active = document.getElementById('editActive').checked ? 1 : 0;
+            await sendRequest('update_product', {product_id: id, name, price, category, description, photo_url, is_active});
+            await loadData();
+            showProductList();
+        };
+        document.getElementById('cancelProductBtn').onclick = () => showProductList();
     }
     
     async function deleteProductById(id) {
@@ -376,16 +308,12 @@
         }
         let html = `<div class="glass-card"><h3>⚙️ Управление автовыдачей</h3>`;
         for (let p of allProducts) {
-            html += `<div class="product-card" style="margin:10px 0"><strong>${escapeHtml(p.name)}</strong><button class="btn-primary manage-items" data-id="${p.id}" data-name="${escapeHtml(p.name).replace(/'/g, "\\'")}">📦 Управление аккаунтами</button></div>`;
+            html += `<div class="product-card" style="margin:10px 0"><strong>${escapeHtml(p.name)}</strong><button class="btn-primary manage-items" data-id="${p.id}" data-name="${escapeHtml(p.name)}">📦 Управление аккаунтами</button></div>`;
         }
         html += `<button class="btn-primary btn-secondary" id="backAdminBtn2">🔙 Назад</button></div>`;
         document.getElementById('adminContent').innerHTML = html;
-        
-        document.querySelectorAll('.manage-items').forEach(btn => {
-            btn.onclick = () => showItemsForProduct(parseInt(btn.dataset.id), btn.dataset.name);
-        });
-        const backBtn = document.getElementById('backAdminBtn2');
-        if(backBtn) backBtn.onclick = () => renderAdminContent();
+        document.querySelectorAll('.manage-items').forEach(btn => btn.onclick = () => showItemsForProduct(parseInt(btn.dataset.id), btn.dataset.name));
+        document.getElementById('backAdminBtn2').onclick = () => renderAdminContent();
     }
     
     async function showItemsForProduct(productId, productName) {
@@ -403,24 +331,17 @@
         } else { html += `<div>Нет аккаунтов</div>`; }
         html += `<button class="btn-primary btn-secondary" id="backItemsBtn">🔙 Назад</button></div>`;
         document.getElementById('adminContent').innerHTML = html;
-        
-        const addBtn = document.getElementById('addItemBtn');
-        if(addBtn) {
-            addBtn.onclick = async () => {
-                let val = document.getElementById('newItem').value;
-                if (!val) return;
-                await sendRequest('add_item', {product_id: productId, item_data: val});
-                await showItemsForProduct(productId, productName);
-            };
-        }
-        document.querySelectorAll('.delete-item').forEach(btn => {
-            btn.onclick = async () => {
-                await sendRequest('delete_item', {item_id: parseInt(btn.dataset.id)});
-                await showItemsForProduct(productId, productName);
-            };
+        document.getElementById('addItemBtn').onclick = async () => {
+            let val = document.getElementById('newItem').value;
+            if (!val) return;
+            await sendRequest('add_item', {product_id: productId, item_data: val});
+            await showItemsForProduct(productId, productName);
+        };
+        document.querySelectorAll('.delete-item').forEach(btn => btn.onclick = async () => {
+            await sendRequest('delete_item', {item_id: parseInt(btn.dataset.id)});
+            await showItemsForProduct(productId, productName);
         });
-        const backBtn = document.getElementById('backItemsBtn');
-        if(backBtn) backBtn.onclick = () => showItemsManagement();
+        document.getElementById('backItemsBtn').onclick = () => showItemsManagement();
     }
     
     function renderAdminContent() {
@@ -433,14 +354,10 @@
                 <button class="btn-primary btn-secondary" id="refreshBtn">🔄 Обновить каталог</button>
             </div>
         `;
-        const addBtn = document.getElementById('addProductBtn');
-        if(addBtn) addBtn.onclick = () => showAddForm();
-        const editBtn = document.getElementById('editProductsBtn');
-        if(editBtn) editBtn.onclick = () => showProductList();
-        const manageBtn = document.getElementById('manageItemsBtn');
-        if(manageBtn) manageBtn.onclick = () => showItemsManagement();
-        const refreshBtn = document.getElementById('refreshBtn');
-        if(refreshBtn) refreshBtn.onclick = async () => { await loadData(); renderCurrentTab(); };
+        document.getElementById('addProductBtn').onclick = () => showAddForm();
+        document.getElementById('editProductsBtn').onclick = () => showProductList();
+        document.getElementById('manageItemsBtn').onclick = () => showItemsManagement();
+        document.getElementById('refreshBtn').onclick = async () => { await loadData(); renderCurrentTab(); };
     }
     
     function renderCurrentTab() {
@@ -467,22 +384,11 @@
                     tg.showPopup({title: "Добавлено", message: `${name} в корзине`, buttons:[{type:"ok"}]});
                 };
             });
-            document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.onclick = () => {
-                    currentCategory = chip.dataset.cat;
-                    renderCurrentTab();
-                };
-            });
+            document.querySelectorAll('.category-chip').forEach(chip => chip.onclick = () => { currentCategory = chip.dataset.cat; renderCurrentTab(); });
         }
         if (currentTab === 'cart') {
-            document.querySelectorAll('.del-cart').forEach(btn => {
-                btn.onclick = () => {
-                    cart = cart.filter(i => i.id !== parseInt(btn.dataset.id));
-                    renderCurrentTab();
-                };
-            });
-            let orderBtn = document.getElementById('orderBtn');
-            if (orderBtn) orderBtn.onclick = async () => {
+            document.querySelectorAll('.del-cart').forEach(btn => btn.onclick = () => { cart = cart.filter(i => i.id !== parseInt(btn.dataset.id)); renderCurrentTab(); });
+            document.getElementById('orderBtn')?.addEventListener('click', async () => {
                 let total = cart.reduce((s,i) => s + i.price * i.qty, 0);
                 if (balance >= total) {
                     let result = await sendRequest('order', {items: cart, total});
@@ -494,14 +400,11 @@
                         tg.showPopup({title: "✅ Успех", message: "Заказ оформлен!", buttons:[{type:"ok"}]});
                     } else tg.showPopup({title: "Ошибка", message: result.error, buttons:[{type:"ok"}]});
                 } else tg.showPopup({title: "Ошибка", message: "Недостаточно средств", buttons:[{type:"ok"}]});
-            };
+            });
         }
-        let supportBtn = document.getElementById('supportBtn');
-        if (supportBtn) supportBtn.onclick = () => window.open('https://t.me/MarketAura_bot?start=support');
-        let rulesBtn = document.getElementById('rulesBtn');
-        if (rulesBtn) rulesBtn.onclick = () => window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank');
-        let replenishBtn = document.getElementById('replenishBtn');
-        if (replenishBtn) replenishBtn.onclick = () => tg.showPopup({title: "Пополнение", message: "Скоро появится", buttons:[{type:"ok"}]});
+        document.getElementById('supportBtn')?.addEventListener('click', () => window.open('https://t.me/MarketAura_bot?start=support'));
+        document.getElementById('rulesBtn')?.addEventListener('click', () => window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank'));
+        document.getElementById('replenishBtn')?.addEventListener('click', () => tg.showPopup({title: "Пополнение", message: "Скоро появится", buttons:[{type:"ok"}]}));
     }
     
     document.querySelectorAll('.nav-item').forEach(btn => {
