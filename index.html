@@ -86,17 +86,6 @@
             color: #b300ff;
             margin-top: -8px;
         }
-        .products-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .product-item {
-            background: rgba(25,25,50,0.7);
-            border-radius: 20px;
-            padding: 16px;
-            border: 1px solid rgba(179,0,255,0.25);
-        }
         .price {
             color: #b300ff;
             font-weight: bold;
@@ -152,14 +141,58 @@
         }
         .category-chip.active { background: #b300ff; color: white; }
         .categories { text-align: center; margin: 10px 0; }
-        .promo-input {
-            width: 100%;
-            padding: 12px;
+        
+        /* Модальное окно для промокода */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
             background: #1a1a2e;
+            border-radius: 32px;
+            padding: 24px;
+            width: 90%;
+            max-width: 340px;
             border: 1px solid #b300ff;
-            border-radius: 16px;
+        }
+        .modal-input {
+            width: 100%;
+            padding: 14px;
+            background: #0a0a0f;
+            border: 1px solid #b300ff;
+            border-radius: 24px;
             color: white;
-            margin: 10px 0;
+            font-size: 16px;
+            margin: 16px 0;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .modal-btn-confirm {
+            background: linear-gradient(90deg, #b300ff, #6a00ff);
+            color: white;
+        }
+        .modal-btn-cancel {
+            background: #2a2a3a;
+            color: #aaa;
         }
     </style>
 </head>
@@ -189,7 +222,6 @@
     tg.expand();
     const user = tg.initDataUnsafe?.user || { id: 0, username: 'user', first_name: 'Гость' };
     
-    // Данные пользователя
     let balance = 0;
     let totalOrders = 0;
     let activeOrders = 0;
@@ -203,7 +235,6 @@
     let currentTab = 'catalog';
     let chatMessages = [];
     
-    // === ТОВАРЫ (можно управлять через GitHub) ===
     const products = [
         { id: 1, name: "Telegram Premium 1 мес", price: 129, category: "premium", emoji: "💎" },
         { id: 2, name: "Ключ Windows 11 Pro", price: 149, category: "keys", emoji: "🔑" },
@@ -215,12 +246,9 @@
         { id: 8, name: "Instagram 1000 лайков", price: 59, category: "boost", emoji: "❤️" }
     ];
     
-    // Загружаем данные из localStorage (сохраняем историю чата)
     function loadFromStorage() {
         const savedChat = localStorage.getItem('auramarket_chat');
-        if (savedChat) {
-            chatMessages = JSON.parse(savedChat);
-        }
+        if (savedChat) chatMessages = JSON.parse(savedChat);
         const savedBalance = localStorage.getItem('auramarket_balance');
         if (savedBalance) balance = parseInt(savedBalance);
         const savedOrders = localStorage.getItem('auramarket_orders');
@@ -236,7 +264,6 @@
         localStorage.setItem('auramarket_promo_count', promoCount);
     }
     
-    // Отправка запроса к боту
     async function sendRequest(action, data = {}) {
         data.action = action;
         try {
@@ -247,38 +274,52 @@
         }
     }
     
-    // Активация промокода
-    async function activatePromo() {
-        tg.showPopup({
-            title: "💎 Активация промокода",
-            message: "Введите промокод:",
-            buttons: [{ type: "ok", text: "✅ Активировать" }, { type: "cancel", text: "❌ Отмена" }]
-        }, async (btn) => {
-            if (btn === 'ok') {
-                tg.showPopup({
-                    title: "💎 Ввод промокода",
-                    message: "Напишите код в поле ниже:",
-                    type: "prompt"
-                }, async (text) => {
-                    if (text && text.trim()) {
-                        const result = await sendRequest('activate_promo', { code: text.trim().toUpperCase() });
-                        if (result.success) {
-                            balance += result.reward;
-                            promoCount++;
-                            saveToStorage();
-                            tg.showPopup({ title: "✅ Успех", message: `Промокод активирован! +${result.reward}₽`, buttons: [{ type: "ok" }] });
-                            renderCurrentTab();
-                        } else {
-                            tg.showPopup({ title: "❌ Ошибка", message: result.error || "Промокод не найден", buttons: [{ type: "ok" }] });
-                        }
-                    }
-                });
+    // Кастомное модальное окно для промокода
+    function showPromoModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 style="text-align:center;">💎 Активация промокода</h3>
+                <input type="text" id="promoInput" class="modal-input" placeholder="Введите промокод" autofocus>
+                <div class="modal-buttons">
+                    <div class="modal-btn modal-btn-cancel" id="promoCancel">❌ Отмена</div>
+                    <div class="modal-btn modal-btn-confirm" id="promoConfirm">✅ Активировать</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        const input = modal.querySelector('#promoInput');
+        input.focus();
+        
+        modal.querySelector('#promoConfirm').onclick = async () => {
+            const code = input.value.trim().toUpperCase();
+            if (!code) {
+                tg.showPopup({ title: "Ошибка", message: "Введите промокод", buttons: [{ type: "ok" }] });
+                return;
             }
+            modal.remove();
+            const result = await sendRequest('activate_promo', { code: code });
+            if (result.success) {
+                balance += result.reward;
+                promoCount++;
+                saveToStorage();
+                tg.showPopup({ title: "✅ Успех", message: `Промокод активирован! +${result.reward}₽`, buttons: [{ type: "ok" }] });
+                if (currentTab === 'profile') renderCurrentTab();
+            } else {
+                tg.showPopup({ title: "❌ Ошибка", message: result.error || "Промокод не найден", buttons: [{ type: "ok" }] });
+            }
+        };
+        
+        modal.querySelector('#promoCancel').onclick = () => modal.remove();
+        
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') modal.querySelector('#promoConfirm').click();
         });
     }
     
-    // Отправка сообщения в чат
-    async function sendChatMessage() {
+    function sendChatMessage() {
         const input = document.getElementById('chatInput');
         const text = input.value.trim();
         if (!text) return;
@@ -300,12 +341,10 @@
     function renderChatMessages() {
         const container = document.getElementById('chatMessagesContainer');
         if (!container) return;
-        
         if (chatMessages.length === 0) {
             container.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">Нет сообщений. Будь первым!</div>';
             return;
         }
-        
         container.innerHTML = chatMessages.map(msg => `
             <div class="chat-message">
                 <strong>${escapeHtml(msg.username)}</strong> <span style="font-size:10px; color:#666;">${msg.date}</span><br>
@@ -423,7 +462,7 @@
         }
         
         if (currentTab === 'profile') {
-            document.getElementById('activatePromoBtn')?.addEventListener('click', activatePromo);
+            document.getElementById('activatePromoBtn')?.addEventListener('click', showPromoModal);
         }
         
         if (currentTab === 'cart') {
@@ -451,7 +490,7 @@
         
         if (currentTab === 'faq') {
             document.getElementById('supportBtn')?.addEventListener('click', () => window.open('https://t.me/MarketAura_bot?start=support'));
-            document.getElementById('rulesBtn')?.addEventListener('click', () => window.open('https://clearly-first-adamite.tilda.ws/auramarketpravila', '_blank'));
+            document.getElementById('rulesBtn')?.addEventListener('click', () => window.open('https://auramarketpravila.tilda.ws/auramarketpravila', '_blank'));
         }
         
         if (currentTab === 'chat') {
@@ -473,14 +512,11 @@
         });
     }
     
-    // Инициализация категорий
     categories.add('all');
     products.forEach(p => categories.add(p.category));
     
-    // Загрузка данных
     loadFromStorage();
     
-    // Навигация
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.onclick = () => {
             currentTab = btn.dataset.tab;
