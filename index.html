@@ -12,7 +12,7 @@
             font-family: 'Montserrat', system-ui;
             color: white;
             padding: 20px;
-            padding-bottom: 80px;
+            padding-bottom: 30px;
         }
         .card {
             background: rgba(20,20,40,0.65);
@@ -22,31 +22,42 @@
             margin: 12px 0;
             border: 1px solid rgba(179,0,255,0.35);
         }
-        .btn-primary {
-            background: linear-gradient(90deg, #b300ff, #6a00ff);
-            border: none;
-            width: 100%;
-            padding: 14px;
-            border-radius: 60px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            margin-top: 10px;
-        }
         .price {
             color: #b300ff;
             font-size: 20px;
             font-weight: bold;
         }
+        .category {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo span {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(145deg, #fff, #b300ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
     </style>
 </head>
 <body>
-    <div style="text-align:center; margin-bottom:20px;">
-        <div style="font-size:28px; font-weight:800;">AuraMarket</div>
+    <div class="logo">
+        <span>AuraMarket</span>
         <div style="font-size:12px; color:#b300ff;">Каталог товаров</div>
     </div>
     
-    <div id="productsList" style="text-align:center;">Загрузка товаров...</div>
+    <div id="products">Загрузка...</div>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -54,40 +65,29 @@
         
         async function sendRequest(action, data = {}) {
             data.action = action;
-            console.log("📤 Отправка:", data);
             const response = await tg.sendData(JSON.stringify(data));
-            console.log("📥 Ответ:", response);
             try {
                 return JSON.parse(response);
             } catch(e) {
-                console.error("Ошибка парсинга:", e);
                 return {};
             }
         }
         
         async function loadProducts() {
-            document.getElementById('productsList').innerHTML = '⏳ Загрузка...';
             const result = await sendRequest('get_products');
-            console.log("Результат get_products:", result);
+            const productsDiv = document.getElementById('products');
             
             if (result.products && result.products.length > 0) {
-                document.getElementById('productsList').innerHTML = result.products.map(p => `
+                productsDiv.innerHTML = result.products.map(p => `
                     <div class="card">
-                        <h3>${p.name}</h3>
+                        <div style="font-size:18px; font-weight:bold;">${p.name}</div>
                         <div class="price">💰 ${p.price} ₽</div>
-                        <div>📁 Категория: ${p.category}</div>
-                        <button class="btn-primary" onclick="alert('Демо: товар ${p.name} добавлен в корзину')">🛒 В корзину</button>
+                        <div class="category">📁 ${p.category}</div>
+                        <div style="font-size:12px; margin-top:8px;">${p.description ? p.description.substring(0, 80) : ''}</div>
                     </div>
                 `).join('');
             } else {
-                document.getElementById('productsList').innerHTML = `
-                    <div class="card">
-                        ❌ Нет товаров в базе.<br><br>
-                        Проверь:<br>
-                        1. В админке бота добавь товар<br>
-                        2. Перезапусти Mini App
-                    </div>
-                `;
+                productsDiv.innerHTML = '<div class="empty">❌ Нет товаров в каталоге<br><br>Добавьте товары через админ-панель бота</div>';
             }
         }
         
