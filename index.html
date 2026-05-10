@@ -22,38 +22,12 @@
             margin: 12px 0;
             border: 1px solid rgba(179,0,255,0.35);
         }
-        .price {
-            color: #b300ff;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        .category {
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 5px;
-        }
-        .empty {
-            text-align: center;
-            padding: 40px;
-            color: #aaa;
-        }
-        .logo {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo span {
-            font-size: 42px;
-            font-weight: 900;
-            background: linear-gradient(145deg, #fff, #b300ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #b300ff;
-        }
+        .price { color: #b300ff; font-size: 20px; font-weight: bold; }
+        .category { font-size: 12px; color: #aaa; margin-top: 5px; }
+        .empty { text-align: center; padding: 40px; color: #aaa; }
+        .logo { text-align: center; margin-bottom: 20px; }
+        .logo span { font-size: 42px; font-weight: 900; background: linear-gradient(145deg, #fff, #b300ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .loading { text-align: center; padding: 40px; color: #b300ff; }
     </style>
 </head>
 <body>
@@ -62,50 +36,36 @@
         <div style="font-size:12px; color:#b300ff;">Каталог товаров</div>
     </div>
     
-    <div id="products" class="loading">⏳ Загрузка товаров...</div>
+    <div id="products" class="loading">⏳ Загрузка...</div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        async function loadProducts() {
-            try {
-                // Отправляем запрос на получение товаров
-                const requestData = JSON.stringify({ action: 'get_products' });
-                console.log("📤 Отправляем:", requestData);
-                
-                const response = await tg.sendData(requestData);
-                console.log("📥 Получен ответ:", response);
-                
-                // Парсим ответ
-                let data;
-                try {
-                    data = JSON.parse(response);
-                } catch(e) {
-                    console.error("Ошибка парсинга JSON:", e);
-                    document.getElementById('products').innerHTML = '<div class="empty">❌ Ошибка: неверный ответ от бота</div>';
-                    return;
-                }
-                
-                console.log("📦 Товары:", data.products);
-                
-                // Отображаем товары
-                if (data.products && data.products.length > 0) {
-                    document.getElementById('products').innerHTML = data.products.map(p => `
-                        <div class="card">
-                            <div style="font-size:18px; font-weight:bold;">${escapeHtml(p.name)}</div>
-                            <div class="price">💰 ${p.price} ₽</div>
-                            <div class="category">📁 ${escapeHtml(p.category)}</div>
-                            <div style="font-size:12px; margin-top:8px;">${p.description ? escapeHtml(p.description.substring(0, 80)) : ''}</div>
-                        </div>
-                    `).join('');
-                } else {
-                    document.getElementById('products').innerHTML = '<div class="empty">❌ В каталоге пока нет товаров<br><br>Добавьте товары через админ-панель бота</div>';
-                }
-            } catch(e) {
-                console.error("Ошибка:", e);
-                document.getElementById('products').innerHTML = '<div class="empty">❌ Ошибка загрузки товаров<br><br>Проверьте подключение к боту</div>';
+        // ===== ТВОИ ТОВАРЫ (ДОБАВЛЯЙ СЮДА ЧЕРЕЗ РЕДАКТОР) =====
+        const products = [
+            { name: "Telegram Premium 1 месяц", price: 129, category: "Premium", description: "Аккаунт с подпиской Premium" },
+            { name: "Ключ Windows 11 Pro", price: 149, category: "Ключи", description: "Лицензионный ключ" },
+            { name: "TikTok USA аккаунт", price: 89, category: "Аккаунты", description: "Аккаунт с регионом USA" },
+            { name: "Накрутка TikTok 1000", price: 79, category: "Накрутка", description: "1000 подписчиков" }
+        ];
+        // ======================================================
+        
+        function showProducts() {
+            const container = document.getElementById('products');
+            if (products.length === 0) {
+                container.innerHTML = '<div class="empty">❌ Нет товаров в каталоге</div>';
+                return;
             }
+            
+            container.innerHTML = products.map(p => `
+                <div class="card">
+                    <div style="font-size:18px; font-weight:bold;">${escapeHtml(p.name)}</div>
+                    <div class="price">💰 ${p.price} ₽</div>
+                    <div class="category">📁 ${escapeHtml(p.category)}</div>
+                    <div style="font-size:12px; margin-top:8px;">${escapeHtml(p.description)}</div>
+                </div>
+            `).join('');
         }
         
         function escapeHtml(str) {
@@ -118,8 +78,7 @@
             });
         }
         
-        // Загружаем товары при открытии
-        loadProducts();
+        showProducts();
     </script>
 </body>
 </html>
