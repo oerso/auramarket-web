@@ -190,6 +190,17 @@
             cursor: pointer;
             margin-top: 10px;
         }
+        .warning-modal {
+            text-align: center;
+        }
+        .warning-modal h3 {
+            color: #ffaa00;
+            margin-bottom: 15px;
+        }
+        .warning-modal p {
+            margin-bottom: 20px;
+            color: #ccc;
+        }
     </style>
 </head>
 <body>
@@ -378,6 +389,52 @@
         localStorage.setItem('auramarket_promo_count', promoCount);
     }
     
+    // ==================== ПРЕДУПРЕЖДЕНИЕ ДЛЯ ЛОТА ====================
+    function showWarningModal(callbackAction, productData = null) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content warning-modal">
+                <h3>⚠️ ПРЕДУПРЕЖДЕНИЕ</h3>
+                <p>❌ В связи с тем, что mini-app находится на техническом обслуживании - вам нужно перейти в бота, в раздел "🛍 Ассортимент" и купить нужный товар уже там.</p>
+                <div class="modal-buttons">
+                    <div class="modal-btn modal-btn-cancel" id="closeWarningBtn">✅ Хорошо, я понял</div>
+                    <div class="modal-btn modal-btn-confirm" id="goToBotBtn">🚀 Перейти в бота</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        modal.querySelector('#closeWarningBtn').onclick = () => modal.remove();
+        modal.querySelector('#goToBotBtn').onclick = () => {
+            window.open('https://t.me/MarketAura_bot', '_blank');
+            modal.remove();
+        };
+    }
+    
+    // ==================== ПРЕДУПРЕЖДЕНИЕ ДЛЯ ПРОМОКОДА ====================
+    function showPromoWarningModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content warning-modal">
+                <h3>⚠️ ПРЕДУПРЕЖДЕНИЕ</h3>
+                <p>❌ В связи с тем, что mini-app находится на технических работах - активация промокода осуществляется в боте.<br><br>❓ Перейдите в бота, найдите нужный раздел и активируйте Ваш промокод.</p>
+                <div class="modal-buttons">
+                    <div class="modal-btn modal-btn-cancel" id="closeWarningBtn">✅ Хорошо, я понял</div>
+                    <div class="modal-btn modal-btn-confirm" id="goToBotBtn">🚀 Перейти в бота</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        modal.querySelector('#closeWarningBtn').onclick = () => modal.remove();
+        modal.querySelector('#goToBotBtn').onclick = () => {
+            window.open('https://t.me/MarketAura_bot', '_blank');
+            modal.remove();
+        };
+    }
+    
     // ==================== НАВИГАЦИЯ ====================
     window.openCategory = function(catName) {
         catalogView = 'category';
@@ -392,22 +449,12 @@
     };
     
     window.openProduct = function(productId, catName, subName) {
-        let product = null;
-        const cat = categories[catName];
-        if (subName && cat.subcategories) {
-            product = cat.products[subName].find(p => p.id === productId);
-        } else if (cat.products) {
-            product = cat.products.find(p => p.id === productId);
-        }
-        if (product) {
-            currentProduct = product;
-            catalogView = 'product';
-            renderCurrentTab();
-        }
+        // Показываем предупреждение вместо открытия лота
+        showWarningModal();
     };
     
     window.openLinkProduct = function(product) {
-        tg.openLink(product.url);
+        showWarningModal();
     };
     
     window.goBack = function() {
@@ -490,27 +537,11 @@
         return html;
     }
     
-    function renderProductView() {
-        let html = `<button class="back-btn" onclick="goBack()">← Назад</button>`;
-        html += `<div class="product-detail">`;
-        html += `<h2>${escapeHtml(currentProduct.name)}</h2>`;
-        html += `<div class="price">${currentProduct.price} ₽</div>`;
-        html += `<div class="description">${escapeHtml(currentProduct.description).replace(/\n/g, '<br>')}</div>`;
-        if (currentProduct.type === 'link') {
-            html += `<div class="link-item"><a href="${currentProduct.url}" target="_blank">🔗 Ссылка на товар</a></div>`;
-            html += `<button class="btn-primary" onclick="openLinkProduct(currentProduct)">🔗 Открыть ссылку</button>`;
-        } else {
-            html += `<button class="btn-primary" onclick="addToCart(currentProduct)">🛒 Добавить в корзину</button>`;
-        }
-        html += `</div>`;
-        return html;
-    }
-    
     function renderCatalog() {
         if (catalogView === 'main') return renderMainCatalog();
         else if (catalogView === 'category') return renderCategoryView();
         else if (catalogView === 'subcategory') return renderSubcategoryView();
-        else if (catalogView === 'product') return renderProductView();
+        else if (catalogView === 'product') return '<div class="empty-stock">Загрузка...</div>';
         return '<div class="empty-stock">Ошибка</div>';
     }
     
@@ -527,7 +558,6 @@
                 <div class="stat-row"><span>💎 Активировано промокодов</span><span>${promoCount}</span></div>
                 <button class="btn-primary" id="replenishBtn">💸 Пополнить баланс</button>
                 <button class="btn-primary btn-secondary" id="activatePromoBtn">💎 Активировать промокод</button>
-                <button class="btn-primary btn-secondary" id="refreshBalanceBtn">🔄 Обновить баланс</button>
             </div>
         `;
     }
@@ -613,41 +643,7 @@
     }
     
     function showPromoModal() {
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3 style="text-align:center;">💎 Активация промокода</h3>
-                <input type="text" id="promoInput" class="modal-input" placeholder="Введите промокод" autofocus>
-                <div class="modal-buttons">
-                    <div class="modal-btn modal-btn-cancel" id="promoCancel">❌ Отмена</div>
-                    <div class="modal-btn modal-btn-confirm" id="promoConfirm">✅ Активировать</div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        const input = modal.querySelector('#promoInput');
-        input.focus();
-        modal.querySelector('#promoConfirm').onclick = async () => {
-            const code = input.value.trim().toUpperCase();
-            if (!code) {
-                tg.showPopup({ title: "Ошибка", message: "Введите промокод", buttons: [{ type: "ok" }] });
-                return;
-            }
-            modal.remove();
-            const result = await sendRequest('activate_promo', { code: code });
-            if (result.success) {
-                balance += result.reward;
-                promoCount++;
-                saveToStorage();
-                tg.showPopup({ title: "✅ Успех", message: `Промокод активирован! +${result.reward}₽`, buttons: [{ type: "ok" }] });
-                if (currentTab === 'profile') renderCurrentTab();
-            } else {
-                tg.showPopup({ title: "❌ Ошибка", message: result.error || "Промокод не найден", buttons: [{ type: "ok" }] });
-            }
-        };
-        modal.querySelector('#promoCancel').onclick = () => modal.remove();
-        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') modal.querySelector('#promoConfirm').click(); });
+        showPromoWarningModal();
     }
     
     async function renderCurrentTab() {
@@ -695,7 +691,7 @@
             document.getElementById('replenishBtn')?.addEventListener('click', () => {
                 tg.showPopup({
                     title: "💸 Пополнение баланса",
-                    message: "Перейдите в бота и пополните баланс в самом боте. После пополнения вернитесь сюда и нажмите «Обновить баланс».",
+                    message: "Перейдите в бота и пополните баланс в самом боте. После пополнения вернитесь сюда, баланс обновится автоматически.",
                     buttons: [
                         { id: "go", type: "default", text: "🚀 Перейти в бота" },
                         { id: "cancel", type: "cancel", text: "❌ Отмена" }
@@ -707,10 +703,6 @@
                 });
             });
             document.getElementById('activatePromoBtn')?.addEventListener('click', showPromoModal);
-            document.getElementById('refreshBalanceBtn')?.addEventListener('click', async () => {
-                await loadUserData();
-                tg.showPopup({title: "Обновлено", message: "Баланс обновлён", buttons:[{type:"ok"}]});
-            });
         }
         
         if (currentTab === 'chat') {
